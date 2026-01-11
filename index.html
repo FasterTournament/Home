@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guild Test Live Interface</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background-color: #0d141f; font-family: sans-serif; color: white; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+
+        /* ব্যানার */
+        .banner { width: 100%; height: 200px; background: #1a2533; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid #1c2a3a; }
+        .banner h1 { color: #ffcc00; font-style: italic; text-transform: uppercase; }
+
+        /* ইউজার কার্ড */
+        .content { flex: 1; padding: 15px; }
+        .user-card { background-color: #162130; border-radius: 12px; padding: 10px 15px; display: flex; align-items: center; margin-bottom: 10px; max-width: 400px; border: 1px solid rgba(255,255,255,0.05); }
+
+        /* প্রোফাইল আইকন ও অ্যানিমেশন */
+        .avatar { 
+            width: 45px; height: 45px; border-radius: 50%; margin-right: 15px; 
+            background: #2d3748; display: flex; align-items: center; justify-content: center; 
+            border: 2px solid transparent; position: relative; 
+        }
+
+        /* কথা বললে এই অ্যানিমেশনটি চলবে */
+        .voice-active {
+            border-color: #3b82f6 !important;
+            animation: pulse-border 0.6s infinite alternate;
+        }
+
+        @keyframes pulse-border {
+            0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); transform: scale(1); }
+            100% { box-shadow: 0 0 0 12px rgba(59, 130, 246, 0); transform: scale(1.05); }
+        }
+
+        .user-info { flex-grow: 1; }
+        .user-name { font-size: 16px; font-weight: 600; }
+        .status-text { font-size: 12px; color: #3b82f6; }
+        .mic-icon-status { color: #666; font-size: 16px; }
+        .speaking-now { color: #3b82f6; }
+
+        /* কন্ট্রোল বাটন */
+        .controls { display: flex; justify-content: space-around; padding: 20px 10px; background-color: #0d141f; border-top: 1px solid #1c2a3a; }
+        .control-btn { display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; background: none; border: none; color: #94a3b8; }
+        .icon-circle { width: 55px; height: 55px; border-radius: 50%; background-color: #2d3748; display: flex; align-items: center; justify-content: center; font-size: 20px; color: white; }
+        .active .icon-circle { background-color: #3b82f6; }
+        .btn-red .icon-circle { background-color: #ef4444; }
+    </style>
+</head>
+<body>
+
+    <div class="banner">
+        <h1>GUILD TEST LIVE</h1>
+    </div>
+
+    <div class="content">
+        <div class="user-card">
+            <div class="avatar" id="myAvatar"><i class="fas fa-user"></i></div>
+            <div class="user-info">
+                <div class="user-name" id="userName">User (ID_7524)</div>
+                <div class="status-text">this is you</div>
+            </div>
+            <div class="mic-icon-status" id="micIndicator"><i class="fas fa-microphone-slash"></i></div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button class="control-btn active"><div class="icon-circle"><i class="fas fa-volume-up"></i></div><span>Speaker</span></button>
+        <button class="control-btn"><div class="icon-circle"><i class="fas fa-video"></i></div><span>Camera</span></button>
+        <button class="control-btn" id="micBtn"><div class="icon-circle" id="micIconBox"><i class="fas fa-microphone-slash" id="mainMicIcon"></i></div><span id="micText">Unmute</span></button>
+        <button class="control-btn btn-red"><div class="icon-circle"><i class="fas fa-phone-slash"></i></div><span>Leave</span></button>
+    </div>
+
+    <script>
+        const micBtn = document.getElementById('micBtn');
+        const mainMicIcon = document.getElementById('mainMicIcon');
+        const micText = document.getElementById('micText');
+        const micIconBox = document.getElementById('micIconBox');
+        const myAvatar = document.getElementById('myAvatar');
+        const micIndicator = document.getElementById('micIndicator');
+
+        let isMuted = true;
+        let audioContext, analyser, microphone, javascriptNode;
+
+        micBtn.onclick = async () => {
+            if (isMuted) {
+                // আনমিউট করার লজিক
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    startVoiceDetection(stream);
+                    
+                    isMuted = false;
+                    micBtn.classList.add('active');
+                    mainMicIcon.className = 'fas fa-microphone';
+                    micText.innerText = 'Mute';
+                    micIndicator.innerHTML = '<i class="fas fa-microphone"></i>';
+                    micIndicator.className = 'mic-icon
