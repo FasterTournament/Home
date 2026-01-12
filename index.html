@@ -12,303 +12,60 @@
 
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            background-color: #0d141f; 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            color: white; 
-            height: 100vh; 
-            display: flex; 
-            flex-direction: column; 
-            overflow: hidden; 
-        }
+        body { background-color: #0d141f; font-family: sans-serif; color: white; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        .banner { width: 100%; height: 230px; background: #000; border-bottom: 1px solid #1c2a3a; }
+        #ytPlayer { width: 100%; height: 100%; border: none; }
+        .content { flex: 1; padding: 15px; overflow-y: auto; }
+        .user-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
+        .user-card { background-color: #162130; border-radius: 12px; padding: 10px; display: flex; align-items: center; border: 1px solid rgba(255,255,255,0.05); }
+        .avatar { width: 40px; height: 40px; border-radius: 50%; margin-right: 10px; background: #2d3748; display: flex; align-items: center; justify-content: center; border: 2px solid transparent; }
+        .voice-active { border-color: #3b82f6 !important; animation: pulse 0.6s infinite alternate; }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.6); } 100% { box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); } }
+        .controls { display: flex; justify-content: space-around; padding: 20px 10px; background-color: #0d141f; border-top: 1px solid #1c2a3a; }
+        .control-btn { display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; background: none; border: none; color: #94a3b8; outline: none; }
+        .icon-circle { width: 52px; height: 52px; border-radius: 50%; background-color: #2d3748; display: flex; align-items: center; justify-content: center; font-size: 18px; color: white; }
+        .active .icon-circle { background-color: #3b82f6; }
+        .btn-red .icon-circle { background-color: #ef4444; }
         
-        .header {
-            background: linear-gradient(135deg, #1a2536 0%, #0d141f 100%);
-            padding: 15px 20px;
-            border-bottom: 1px solid #1c2a3a;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .logo {
-            font-size: 24px;
-            font-weight: bold;
-            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        
-        .user-info {
-            background: #162130;
-            padding: 8px 15px;
-            border-radius: 20px;
-            font-size: 14px;
-        }
-        
-        .banner { 
-            width: 100%; 
-            height: 230px; 
-            background: #000; 
-            border-bottom: 1px solid #1c2a3a; 
-            position: relative;
-        }
-        
-        #ytPlayer { 
-            width: 100%; 
-            height: 100%; 
-            border: none; 
-        }
-        
-        .live-badge {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            background: #ef4444;
-            padding: 5px 10px;
-            border-radius: 4px;
+        /* Status indicator */
+        .status-indicator {
             font-size: 12px;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        
-        .content { 
-            flex: 1; 
-            padding: 15px; 
-            overflow-y: auto; 
-        }
-        
-        .section-title {
-            margin-bottom: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .section-title h3 {
-            font-size: 18px;
-        }
-        
-        .user-count {
-            background: #3b82f6;
-            padding: 3px 10px;
-            border-radius: 15px;
-            font-size: 14px;
-        }
-        
-        .user-list { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); 
-            gap: 12px; 
-        }
-        
-        .user-card { 
-            background: linear-gradient(145deg, #162130, #1a2536);
-            border-radius: 12px; 
-            padding: 15px; 
-            display: flex; 
-            align-items: center; 
-            border: 1px solid rgba(59, 130, 246, 0.1);
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        
-        .user-card:hover {
-            transform: translateY(-2px);
-            border-color: rgba(59, 130, 246, 0.3);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
-        }
-        
-        .avatar { 
-            width: 50px; 
-            height: 50px; 
-            border-radius: 50%; 
-            margin-right: 15px; 
-            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            border: 2px solid transparent; 
-            font-size: 20px;
-        }
-        
-        .voice-active { 
-            border-color: #3b82f6 !important; 
-            animation: pulse 1.5s infinite alternate; 
-        }
-        
-        @keyframes pulse { 
-            0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.6); } 
-            100% { box-shadow: 0 0 0 12px rgba(59, 130, 246, 0); } 
-        }
-        
-        .user-name {
-            flex: 1;
-        }
-        
-        .user-name small {
-            color: #94a3b8;
-            font-size: 12px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            background: #374151;
             margin-top: 3px;
-            display: block;
+            display: inline-block;
         }
         
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
+        .status-connected {
             background: #10b981;
-            margin-left: 10px;
         }
         
-        .status-dot.muted {
-            background: #ef4444;
+        .status-muted {
+            background: #6b7280;
         }
         
-        .controls { 
-            display: flex; 
-            justify-content: space-around; 
-            padding: 20px 10px; 
-            background: linear-gradient(to top, #0d141f, #1a2536);
-            border-top: 1px solid #1c2a3a; 
-        }
-        
-        .control-btn { 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            gap: 8px; 
-            cursor: pointer; 
-            background: none; 
-            border: none; 
-            color: #94a3b8; 
-            outline: none; 
-            transition: all 0.3s ease;
-            min-width: 80px;
-        }
-        
-        .control-btn:hover {
-            color: #ffffff;
-            transform: scale(1.05);
-        }
-        
-        .icon-circle { 
-            width: 60px; 
-            height: 60px; 
-            border-radius: 50%; 
-            background: linear-gradient(135deg, #2d3748, #1a2536);
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            font-size: 20px; 
-            color: white; 
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        }
-        
-        .control-btn.active .icon-circle { 
-            background: linear-gradient(135deg, #3b82f6, #2563eb);
-            box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
-        }
-        
-        .btn-red .icon-circle { 
-            background: linear-gradient(135deg, #ef4444, #dc2626);
-        }
-        
-        .btn-red:hover .icon-circle {
-            box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
-        }
-        
-        /* Scrollbar Styling */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        
-        ::-webkit-scrollbar-track {
-            background: #0d141f;
-        }
-        
-        ::-webkit-scrollbar-thumb {
+        .status-speaking {
             background: #3b82f6;
-            border-radius: 4px;
-        }
-        
-        .loading {
-            text-align: center;
-            padding: 20px;
-            color: #94a3b8;
-        }
-        
-        @media (max-width: 768px) {
-            .user-list {
-                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-            }
-            
-            .icon-circle {
-                width: 50px;
-                height: 50px;
-                font-size: 18px;
-            }
-            
-            .avatar {
-                width: 40px;
-                height: 40px;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .controls {
-                padding: 15px 5px;
-            }
-            
-            .control-btn {
-                min-width: 70px;
-            }
-            
-            .user-list {
-                grid-template-columns: 1fr;
-            }
         }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <div class="logo">Guild Live</div>
-        <div class="user-info" id="userInfo">Loading...</div>
-    </div>
-
-    <div class="banner" id="videoContainer">
-        <div class="live-badge">
-            <i class="fas fa-circle"></i> LIVE
-        </div>
-    </div>
+    <div class="banner" id="videoContainer"></div>
 
     <div class="content">
-        <div class="section-title">
-            <h3>Voice Participants</h3>
-            <div class="user-count" id="userCount">0 Online</div>
-        </div>
         <div class="user-list" id="userList">
-            <div class="loading">Loading users...</div>
+            <div style="text-align: center; padding: 20px; color: #94a3b8;">
+                <i class="fas fa-spinner fa-spin"></i> Loading...
+            </div>
         </div>
     </div>
 
     <div class="controls">
-        <button class="control-btn active" id="speakerBtn">
-            <div class="icon-circle"><i class="fas fa-volume-up"></i></div>
-            <span>Speaker</span>
-        </button>
-        <button class="control-btn" id="micBtn">
-            <div class="icon-circle"><i class="fas fa-microphone-slash" id="micIcon"></i></div>
-            <span id="micText">Unmute</span>
-        </button>
-        <button class="control-btn btn-red" id="leaveBtn">
-            <div class="icon-circle"><i class="fas fa-phone-slash"></i></div>
-            <span>Leave</span>
-        </button>
+        <button class="control-btn active" id="speakerBtn"><div class="icon-circle"><i class="fas fa-volume-up"></i></div><span>Speaker</span></button>
+        <button class="control-btn" id="micBtn"><div class="icon-circle"><i class="fas fa-microphone-slash" id="micIcon"></i></div><span id="micText">Unmute</span></button>
+        <button class="control-btn btn-red" id="leaveBtn"><div class="icon-circle"><i class="fas fa-phone-slash"></i></div><span>Leave</span></button>
     </div>
 
     <script>
@@ -322,28 +79,16 @@
         firebase.initializeApp(config);
         const db = firebase.database();
         const myId = "User_" + Math.floor(Math.random() * 9000 + 1000);
-        const myColor = Math.floor(Math.random() * 360);
         let localStream;
         const peers = {};
         const processedSignals = new Set();
+        const activeConnections = new Set();
         const audioElements = {};
 
-        document.getElementById('userInfo').textContent = `You: ${myId}`;
-
-        // ১. ইউটিউব লাইভ লোড
+        // ১. ইউটিউব লাইভ
         db.ref('live_stream/video_id').on('value', snap => {
-            if(snap.val() && snap.val().trim() !== '') {
-                document.getElementById('videoContainer').innerHTML = `
-                    <iframe 
-                        id="ytPlayer" 
-                        src="https://www.youtube.com/embed/${snap.val().trim()}?autoplay=1&mute=0&rel=0&modestbranding=1"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowfullscreen>
-                    </iframe>
-                    <div class="live-badge">
-                        <i class="fas fa-circle"></i> LIVE
-                    </div>
-                `;
+            if(snap.val()) {
+                document.getElementById('videoContainer').innerHTML = `<iframe id="ytPlayer" src="https://www.youtube.com/embed/${snap.val()}?autoplay=1&mute=0"></iframe>`;
             } else {
                 document.getElementById('videoContainer').innerHTML = `
                     <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #94a3b8;">
@@ -359,73 +104,89 @@
         // ২. অডিও এবং সিগন্যালিং শুরু
         async function startApp() {
             try {
+                console.log("Starting app...");
+                
+                // Try to get microphone access
                 localStream = await navigator.mediaDevices.getUserMedia({ 
                     audio: {
                         echoCancellation: true,
                         noiseSuppression: true,
                         autoGainControl: true
-                    } 
+                    }
                 });
                 
+                console.log("Microphone access granted");
+                
+                // শুরুতে মিউট
                 localStream.getAudioTracks()[0].enabled = false;
                 
-                // Firebase এ নিজের তথ্য সেট
-                db.ref('users/' + myId).set({ 
+                // Cleanup any existing data
+                db.ref('users/' + myId).remove();
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                // Set user data
+                await db.ref('users/' + myId).set({ 
                     id: myId, 
                     isMuted: true,
-                    color: myColor,
-                    timestamp: firebase.database.ServerValue.TIMESTAMP 
+                    timestamp: Date.now()
                 });
                 
+                console.log("User data saved:", myId);
+                
+                // Cleanup on disconnect
                 db.ref('users/' + myId).onDisconnect().remove();
                 
-                // Existing users এর সাথে connect
-                db.ref('users').once('value').then(snapshot => {
-                    const users = snapshot.val();
-                    if(users) {
-                        for(let id in users) {
-                            if(id !== myId) {
-                                setTimeout(() => initiateCall(id), 500);
-                            }
-                        }
-                    }
-                });
-
-                // নতুন user যোগদান
-                db.ref('users').on('child_added', snapshot => {
-                    const user = snapshot.val();
-                    if (user.id !== myId && !peers[user.id]) {
-                        setTimeout(() => initiateCall(user.id), 500);
-                    }
-                });
-
-                // User remove হলে cleanup
-                db.ref('users').on('child_removed', snapshot => {
-                    const userId = snapshot.key;
-                    cleanupPeer(userId);
-                });
-
+                // Listen for existing users
+                setupUserListeners();
+                
+                // Setup signal listener
                 setupSignalListener();
-
-                console.log("App started successfully");
-
+                
+                // Initial connection to existing users
+                connectToExistingUsers();
+                
             } catch (error) {
                 console.error("Error starting app:", error);
                 document.getElementById('userList').innerHTML = `
                     <div style="text-align: center; padding: 40px; color: #ef4444;">
                         <i class="fas fa-exclamation-triangle" style="font-size: 40px; margin-bottom: 15px;"></i>
-                        <p>Microphone access required!</p>
-                        <p style="font-size: 14px; margin-top: 10px;">Please allow microphone access and refresh.</p>
+                        <p>Error: ${error.message}</p>
+                        <button onclick="location.reload()" style="margin-top: 15px; padding: 8px 16px; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer;">
+                            Refresh Page
+                        </button>
                     </div>
                 `;
             }
         }
 
-        // Signal listener setup
+        function setupUserListeners() {
+            // নতুন user যোগদান
+            db.ref('users').on('child_added', snapshot => {
+                const user = snapshot.val();
+                console.log("User added:", user.id);
+                
+                if (user.id !== myId && !peers[user.id] && !activeConnections.has(user.id)) {
+                    activeConnections.add(user.id);
+                    setTimeout(() => initiateCall(user.id), 1000);
+                }
+            });
+
+            // User remove হলে cleanup
+            db.ref('users').on('child_removed', snapshot => {
+                const userId = snapshot.key;
+                console.log("User removed:", userId);
+                
+                cleanupPeer(userId);
+                activeConnections.delete(userId);
+            });
+        }
+
         function setupSignalListener() {
             db.ref('signals/' + myId).on('child_added', snapshot => {
                 const signal = snapshot.val();
                 const signalKey = snapshot.key;
+                
+                console.log("Signal received from:", signal?.from, "key:", signalKey);
                 
                 if(!signal || !signal.from || signal.from === myId) {
                     db.ref('signals/' + myId).child(signalKey).remove();
@@ -442,11 +203,32 @@
             });
         }
 
+        async function connectToExistingUsers() {
+            const snapshot = await db.ref('users').once('value');
+            const users = snapshot.val();
+            
+            if(!users) return;
+            
+            console.log("Existing users:", Object.keys(users));
+            
+            // Connect to all existing users except myself
+            for(let id in users) {
+                if(users[id].id !== myId && !peers[users[id].id] && !activeConnections.has(users[id].id)) {
+                    console.log("Connecting to existing user:", users[id].id);
+                    activeConnections.add(users[id].id);
+                    setTimeout(() => initiateCall(users[id].id), 500);
+                }
+            }
+        }
+
         function initiateCall(targetId) {
             if(peers[targetId] || !localStream) {
+                console.log("Skipping call to", targetId, "- already connected or no stream");
                 return;
             }
-
+            
+            console.log("Initiating call to:", targetId);
+            
             const peer = new SimplePeer({ 
                 initiator: true, 
                 trickle: false, 
@@ -454,41 +236,52 @@
                 config: {
                     iceServers: [
                         { urls: 'stun:stun.l.google.com:19302' },
-                        { urls: 'stun:global.stun.twilio.com:3478' }
+                        { urls: 'stun:stun1.l.google.com:19302' },
+                        { urls: 'stun:stun2.l.google.com:19302' }
                     ]
                 }
             });
-
+            
             peer.on('signal', data => {
+                console.log("Sending signal to:", targetId);
                 db.ref('signals/' + targetId).push({ 
                     from: myId, 
                     signal: data 
                 }).then(ref => {
                     setTimeout(() => ref.remove(), 15000);
-                }).catch(err => console.error('Signal send error:', err));
+                });
             });
-
+            
             peer.on('stream', stream => {
+                console.log("Received stream from:", targetId);
                 playRemoteStream(stream, targetId);
             });
-
+            
             peer.on('error', err => {
                 console.error('Peer error for', targetId, ':', err);
                 cleanupPeer(targetId);
             });
-
+            
             peer.on('close', () => {
+                console.log("Peer closed for:", targetId);
                 cleanupPeer(targetId);
             });
-
+            
             peer.on('connect', () => {
-                console.log('Connected to', targetId);
+                console.log("✅ Connected to:", targetId);
+                updateConnectionStatus(targetId, true);
             });
-
+            
+            peer.on('data', data => {
+                console.log("Data received from", targetId, ":", data);
+            });
+            
             peers[targetId] = peer;
         }
 
         function handleSignal(data, signalKey) {
+            console.log("Handling signal from:", data.from);
+            
             if(!data || !data.from || !data.signal) {
                 db.ref('signals/' + myId).child(signalKey).remove();
                 return;
@@ -497,6 +290,8 @@
             let peer = peers[data.from];
             
             if (!peer) {
+                console.log("Creating peer for:", data.from);
+                
                 peer = new SimplePeer({ 
                     initiator: false, 
                     trickle: false, 
@@ -504,12 +299,14 @@
                     config: {
                         iceServers: [
                             { urls: 'stun:stun.l.google.com:19302' },
-                            { urls: 'stun:global.stun.twilio.com:3478' }
+                            { urls: 'stun:stun1.l.google.com:19302' },
+                            { urls: 'stun:stun2.l.google.com:19302' }
                         ]
                     }
                 });
-
+                
                 peer.on('signal', signalData => {
+                    console.log("Responding to signal from:", data.from);
                     db.ref('signals/' + data.from).push({ 
                         from: myId, 
                         signal: signalData 
@@ -517,24 +314,33 @@
                         setTimeout(() => ref.remove(), 15000);
                     });
                 });
-
+                
                 peer.on('stream', stream => {
+                    console.log("✅ Stream received from responder:", data.from);
                     playRemoteStream(stream, data.from);
                 });
-
+                
                 peer.on('error', err => {
-                    console.error('Peer error:', err);
+                    console.error('Responder peer error:', err);
                     cleanupPeer(data.from);
                 });
-
+                
                 peer.on('close', () => {
+                    console.log("Responder peer closed:", data.from);
                     cleanupPeer(data.from);
                 });
-
+                
+                peer.on('connect', () => {
+                    console.log("✅ Responder connected:", data.from);
+                    updateConnectionStatus(data.from, true);
+                });
+                
                 peers[data.from] = peer;
+                activeConnections.add(data.from);
             }
-
+            
             try {
+                console.log("Applying signal from:", data.from);
                 peer.signal(data.signal);
             } catch(err) {
                 console.error('Error applying signal:', err);
@@ -547,6 +353,8 @@
         }
 
         function playRemoteStream(stream, userId) {
+            console.log("Playing stream for:", userId);
+            
             let audio = audioElements[userId];
             if(!audio) {
                 audio = document.createElement('audio');
@@ -560,17 +368,20 @@
             
             try {
                 audio.srcObject = stream;
+                console.log("✅ Audio stream set for:", userId);
             } catch(e) {
                 console.error('Error setting audio source:', e);
             }
         }
 
         function cleanupPeer(userId) {
+            console.log("Cleaning up peer:", userId);
+            
             if(peers[userId]) {
                 try {
                     peers[userId].destroy();
                 } catch(e) {
-                    console.log('Error destroying peer:', e);
+                    console.log("Error destroying peer:", e);
                 }
                 delete peers[userId];
             }
@@ -584,11 +395,30 @@
                 delete audioElements[userId];
             }
             
+            activeConnections.delete(userId);
+            
             for(const key of processedSignals) {
                 if(key.includes(userId)) {
                     processedSignals.delete(key);
                 }
             }
+            
+            updateConnectionStatus(userId, false);
+        }
+
+        function updateConnectionStatus(userId, connected) {
+            // This function updates UI to show connection status
+            const userCards = document.querySelectorAll('.user-card');
+            userCards.forEach(card => {
+                const nameElement = card.querySelector('.user-name');
+                if(nameElement && nameElement.textContent.includes(userId)) {
+                    const statusSpan = card.querySelector('.connection-status');
+                    if(statusSpan) {
+                        statusSpan.textContent = connected ? 'Connected' : 'Disconnected';
+                        statusSpan.className = `status-indicator ${connected ? 'status-connected' : ''}`;
+                    }
+                }
+            });
         }
 
         // ৩. বাটন কন্ট্রোল
@@ -610,74 +440,114 @@
             
             db.ref('users/' + myId).update({ 
                 isMuted: !newState,
-                timestamp: firebase.database.ServerValue.TIMESTAMP 
+                timestamp: Date.now()
             });
+            
+            console.log("Mic state changed to:", newState ? "Unmuted" : "Muted");
         };
 
-        // User list update
+        // User list update - FIXED version
         db.ref('users').on('value', snap => {
             const users = snap.val();
             const list = document.getElementById('userList');
             
-            if(!users || Object.keys(users).length === 0) {
-                list.innerHTML = '<div class="loading">No users online</div>';
-                document.getElementById('userCount').textContent = '0 Online';
+            if(!users) {
+                list.innerHTML = '<div style="text-align: center; padding: 20px; color: #94a3b8;">No users online</div>';
                 return;
             }
             
             let html = '';
-            let userCount = 0;
+            const userArray = Object.values(users);
+            const realUserCount = userArray.length;
             
-            const sortedUsers = Object.values(users).sort((a, b) => {
+            console.log("Real user count:", realUserCount, "Users:", userArray.map(u => u.id));
+            
+            // Sort: Me first, then others
+            userArray.sort((a, b) => {
                 if(a.id === myId) return -1;
                 if(b.id === myId) return 1;
                 return (b.timestamp || 0) - (a.timestamp || 0);
             });
             
-            sortedUsers.forEach(u => {
-                userCount++;
+            userArray.forEach(u => {
                 const isMe = u.id === myId;
                 const isSpeaking = !u.isMuted;
-                const userColor = u.color || Math.floor(Math.random() * 360);
+                const isConnected = peers[u.id] && peers[u.id].connected;
                 
                 html += `
                     <div class="user-card">
-                        <div class="avatar ${isSpeaking ? 'voice-active' : ''}" 
-                             style="background: linear-gradient(135deg, hsl(${userColor}, 70%, 60%), hsl(${(userColor + 60) % 360}, 70%, 60%))">
+                        <div class="avatar ${isSpeaking ? 'voice-active' : ''}">
                             <i class="fas fa-user"></i>
                         </div>
                         <div class="user-name">
-                            ${isMe ? 'You (Me)' : u.id}
-                            <small>${isSpeaking ? '🎤 Speaking' : '🔇 Muted'}</small>
+                            <strong>${isMe ? 'You (Me)' : u.id}</strong><br>
+                            <span class="status-indicator ${isConnected ? 'status-connected' : ''}">
+                                ${isMe ? 'Me' : (isConnected ? 'Connected' : 'Connecting...')}
+                            </span>
+                            <span class="status-indicator ${isSpeaking ? 'status-speaking' : 'status-muted'}">
+                                ${isSpeaking ? 'Speaking' : 'Muted'}
+                            </span>
                         </div>
-                        <div class="status-dot ${isSpeaking ? '' : 'muted'}"></div>
                     </div>
                 `;
             });
             
             list.innerHTML = html;
-            document.getElementById('userCount').textContent = `${userCount} Online`;
+            
+            // Update title with real count
+            document.title = `Guild Live (${realUserCount} Online)`;
         });
 
         document.getElementById('leaveBtn').onclick = () => {
             if(confirm("Are you sure you want to leave the voice chat?")) {
+                // Cleanup all peers
                 for(const userId in peers) {
                     cleanupPeer(userId);
                 }
                 
+                // Stop local stream
                 if(localStream) {
                     localStream.getTracks().forEach(track => track.stop());
                 }
                 
+                // Remove from Firebase
                 db.ref('users/' + myId).remove();
                 db.ref('signals/' + myId).remove();
                 
+                // Redirect after cleanup
                 setTimeout(() => {
-                    window.location.href = 'about:blank';
-                }, 300);
+                    window.location.href = window.location.href;
+                }, 500);
             }
         };
 
+        // Speaker button control
+        document.getElementById('speakerBtn').onclick = () => {
+            const btn = document.getElementById('speakerBtn');
+            const isActive = btn.classList.contains('active');
+            
+            if(isActive) {
+                btn.classList.remove('active');
+                document.querySelector('#speakerBtn .icon-circle i').className = 'fas fa-volume-mute';
+                
+                Object.values(audioElements).forEach(audio => {
+                    audio.volume = 0;
+                });
+                
+                console.log("All speakers muted");
+            } else {
+                btn.classList.add('active');
+                document.querySelector('#speakerBtn .icon-circle i').className = 'fas fa-volume-up';
+                
+                Object.values(audioElements).forEach(audio => {
+                    audio.volume = 1.0;
+                });
+                
+                console.log("Speakers unmuted");
+            }
+        };
+
+        // Auto cleanup on page unload
         window.addEventListener('beforeunload', (e) => {
             db.ref('users/' + myId).remove();
             db.ref('signals/' + myId).remove();
@@ -687,32 +557,11 @@
             }
         });
 
-        document.getElementById('speakerBtn').onclick = () => {
-            const btn = document.getElementById('speakerBtn');
-            const isActive = btn.classList.contains('active');
-            
-            if(isActive) {
-                btn.classList.remove('active');
-                document.querySelector('.icon-circle i').className = 'fas fa-volume-mute';
-                
-                Object.values(audioElements).forEach(audio => {
-                    audio.volume = 0;
-                });
-                
-                alert("All speakers muted");
-            } else {
-                btn.classList.add('active');
-                document.querySelector('.icon-circle i').className = 'fas fa-volume-up';
-                
-                Object.values(audioElements).forEach(audio => {
-                    audio.volume = 1.0;
-                });
-                
-                alert("Speakers unmuted");
-            }
-        };
-
+        // Debug info
+        console.log("My ID:", myId);
+        console.log("Starting app...");
+        
         startApp();
     </script>
 </body>
-    </html>
+</html>
