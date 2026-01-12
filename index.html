@@ -358,7 +358,6 @@
             background: #4b5563;
         }
         
-        /* Notification */
         .notification {
             position: fixed;
             top: 20px;
@@ -380,35 +379,20 @@
             to { transform: translateX(0); opacity: 1; }
         }
         
-        .notification.error {
-            background: #ef4444;
-        }
-        
-        .notification.warning {
-            background: #f59e0b;
-        }
+        .notification.error { background: #ef4444; }
+        .notification.warning { background: #f59e0b; }
     </style>
 </head>
 <body>
 
-    <!-- Permission Modal -->
     <div class="permission-modal" id="permissionModal">
         <div class="modal-content">
-            <div class="modal-icon">
-                <i class="fas fa-microphone"></i>
-            </div>
+            <div class="modal-icon"><i class="fas fa-microphone"></i></div>
             <div class="modal-title">Microphone Required</div>
-            <div class="modal-text">
-                This voice chat needs access to your microphone.<br>
-                Please click "Allow Microphone" and grant permission when prompted by your browser.
-            </div>
+            <div class="modal-text">This voice chat needs access to your microphone.</div>
             <div class="modal-buttons">
-                <button class="modal-btn primary" onclick="requestMicrophone()">
-                    Allow Microphone
-                </button>
-                <button class="modal-btn secondary" onclick="continueWithoutMic()">
-                    Continue Without Mic
-                </button>
+                <button class="modal-btn primary" onclick="requestMicrophone()">Allow Microphone</button>
+                <button class="modal-btn secondary" onclick="continueWithoutMic()">Listen Only</button>
             </div>
         </div>
     </div>
@@ -421,12 +405,8 @@
     <div class="banner">
         <div class="banner-content">
             <div class="banner-title">Voice Chat Room</div>
-            <div class="connection-status" id="connectionStatus">
-                <i class="fas fa-circle-notch fa-spin"></i> Initializing...
-            </div>
-            <div class="connection-status" id="micStatus" style="margin-top: 5px; font-size: 13px;">
-                Microphone: Checking...
-            </div>
+            <div id="connectionStatus" class="connection-status"><i class="fas fa-circle-notch fa-spin"></i> Initializing...</div>
+            <div id="micStatus" class="connection-status">Microphone: Checking...</div>
         </div>
     </div>
 
@@ -435,12 +415,7 @@
             <div class="section-title">Voice Participants</div>
             <div class="online-count" id="userCount">0 Online</div>
         </div>
-        <div class="user-list" id="userList">
-            <div class="loading">
-                <i class="fas fa-spinner fa-spin"></i><br>
-                Loading participants...
-            </div>
-        </div>
+        <div class="user-list" id="userList"></div>
     </div>
 
     <div class="controls">
@@ -459,7 +434,6 @@
     </div>
 
     <script>
-        // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyCSoTqqSC_NqigWrHwE4Q8IUvWRP9TrxG8",
             authDomain: "top-up-4db01.firebaseapp.com",
@@ -470,437 +444,162 @@
             appId: "1:264548197473:android:4c986618c48182125d7620"
         };
         
-        // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
-        
-        // Application State
         const myId = "User_" + Math.floor(Math.random() * 9000 + 1000);
-        let localStream = null;
+        
+        let localStream;
+        let peers = {};
         let isMuted = true;
-        let microphoneGranted = false;
-        let micBtn = null;
-        let micIcon = null;
-        let micText = null;
-        
-        // Show notification
-        function showNotification(message, type = 'success') {
-            const notification = document.createElement('div');
-            notification.className = `notification ${type}`;
-            notification.innerHTML = `
-                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
-                <span>${message}</span>
-            `;
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                notification.remove();
-            }, 3000);
+        let speakerEnabled = true;
+
+        function showNotification(msg, type='success') {
+            const n = document.createElement('div');
+            n.className = `notification ${type}`;
+            n.innerHTML = `<span>${msg}</span>`;
+            document.body.appendChild(n);
+            setTimeout(() => n.remove(), 3000);
         }
-        
-        // Request microphone permission
+
         async function requestMicrophone() {
             try {
-                console.log("Requesting microphone access...");
-                
-                // Hide modal
+                localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                localStream.getAudioTracks()[0].enabled = false; 
                 document.getElementById('permissionModal').style.display = 'none';
-                
-                // Request microphone
-                localStream = await navigator.mediaDevices.getUserMedia({
-                    audio: {
-                        echoCancellation: true,
-                        noiseSuppression: true,
-                        autoGainControl: true,
-                        channelCount: 1
-                    },
-                    video: false
-                });
-                
-                console.log("✅ Microphone access GRANTED");
-                
-                // Update state
-                microphoneGranted = true;
-                
-                // Start with muted microphone
-                localStream.getAudioTracks()[0].enabled = false;
-                isMuted = true;
-                
-                // Update UI
-                updateMicButtonUI();
-                document.getElementById('micStatus').innerHTML = `
-                    <span style="color: #10b981;">
-                        <i class="fas fa-check-circle"></i> Microphone: Ready
-                    </span>
-                `;
-                
-                // Show success notification
-                showNotification('Microphone connected successfully!', 'success');
-                
-                // Initialize app
-                initApp();
-                
-            } catch (error) {
-                console.error("❌ Microphone access DENIED:", error);
-                
-                document.getElementById('permissionModal').innerHTML = `
-                    <div class="modal-content">
-                        <div class="modal-icon" style="color: #ef4444;">
-                            <i class="fas fa-exclamation-triangle"></i>
-                        </div>
-                        <div class="modal-title">Permission Denied</div>
-                        <div class="modal-text">
-                            Microphone access was denied. To use voice chat:<br><br>
-                            1. Click the lock icon (🔒) in your browser's address bar<br>
-                            2. Find "Microphone" in permissions list<br>
-                            3. Change to "Allow"<br>
-                            4. Refresh the page
-                        </div>
-                        <div class="modal-buttons">
-                            <button class="modal-btn primary" onclick="location.reload()">
-                                Refresh Page
-                            </button>
-                            <button class="modal-btn secondary" onclick="continueWithoutMic()">
-                                Continue Without Mic
-                            </button>
-                        </div>
-                    </div>
-                `;
-                
-                document.getElementById('micStatus').innerHTML = `
-                    <span style="color: #ef4444;">
-                        <i class="fas fa-times-circle"></i> Microphone: Permission Denied
-                    </span>
-                `;
-                
-                // Disable mic button
-                disableMicButton();
+                initApp(true);
+            } catch (e) {
+                alert("Mic access denied");
+                continueWithoutMic();
             }
         }
-        
-        // Continue without microphone
+
         function continueWithoutMic() {
             document.getElementById('permissionModal').style.display = 'none';
-            microphoneGranted = false;
-            
-            document.getElementById('micStatus').innerHTML = `
-                <span style="color: #f59e0b;">
-                    <i class="fas fa-volume-mute"></i> Microphone: Listening Only
-                </span>
-            `;
-            
-            // Disable mic button
-            disableMicButton();
-            
-            // Initialize app without microphone
-            initApp();
+            initApp(false);
         }
-        
-        // Initialize application
-        async function initApp() {
-            console.log("🚀 Initializing application...");
-            
-            // Update UI
+
+        function initApp(hasMic) {
             document.getElementById('myIdDisplay').textContent = `You: ${myId}`;
-            document.getElementById('connectionStatus').innerHTML = `
-                <span style="color: #10b981;">
-                    <i class="fas fa-check-circle"></i> Connected as <strong>${myId}</strong>
-                </span>
-            `;
+            document.getElementById('connectionStatus').innerHTML = "Connected";
             
-            // Get UI elements
-            micBtn = document.getElementById('micBtn');
-            micIcon = document.getElementById('micIcon');
-            micText = document.getElementById('micText');
-            
-            // Setup mic button
-            setupMicButton();
-            
-            // Setup other controls
-            setupControls();
-            
-            // Connect to Firebase if microphone is available
-            if (microphoneGranted) {
-                setupFirebaseConnection();
-            }
-            
-            // Show initial user list (just yourself)
-            updateUserList([{
-                id: myId,
-                isMuted: isMuted,
-                isMe: true
-            }]);
-        }
-        
-        // Setup microphone button
-        function setupMicButton() {
-            if (!microphoneGranted) {
-                disableMicButton();
-                return;
-            }
-            
-            // Enable mic button with proper click handler
-            micBtn.classList.remove('btn-disabled');
-            micBtn.onclick = toggleMicrophone;
-            
-            // Update initial UI state
-            updateMicButtonUI();
-            
-            console.log("✅ Mic button setup complete");
-        }
-        
-        // Disable microphone button
-        function disableMicButton() {
-            micBtn.classList.add('btn-disabled');
-            micBtn.onclick = null;
-            micIcon.className = 'fas fa-microphone-slash';
-            micText.textContent = 'No Mic';
-        }
-        
-        // Update microphone button UI
-        function updateMicButtonUI() {
-            if (!microphoneGranted) {
-                disableMicButton();
-                return;
-            }
-            
-            if (isMuted) {
-                // Mic is muted
-                micBtn.classList.remove('active');
-                micIcon.className = 'fas fa-microphone-slash';
-                micText.textContent = 'Unmute';
-            } else {
-                // Mic is unmuted
-                micBtn.classList.add('active');
-                micIcon.className = 'fas fa-microphone';
-                micText.textContent = 'Mute';
-            }
-        }
-        
-        // Toggle microphone function - FIXED VERSION
-        function toggleMicrophone() {
-            console.log("🎤 Toggle microphone clicked");
-            
-            if (!localStream || !microphoneGranted) {
-                showNotification('Microphone not available', 'error');
-                return;
-            }
-            
-            try {
-                const audioTracks = localStream.getAudioTracks();
-                console.log("Audio tracks found:", audioTracks.length);
-                
-                if (audioTracks.length === 0) {
-                    showNotification('No microphone track found', 'error');
-                    return;
-                }
-                
-                const audioTrack = audioTracks[0];
-                console.log("Current track state:", {
-                    enabled: audioTrack.enabled,
-                    muted: audioTrack.muted,
-                    readyState: audioTrack.readyState
-                });
-                
-                // Toggle the track
-                isMuted = !audioTrack.enabled;
-                audioTrack.enabled = !isMuted;
-                
-                console.log("New track state:", {
-                    enabled: audioTrack.enabled,
-                    isMuted: isMuted
-                });
-                
-                // Update UI
-                updateMicButtonUI();
-                
-                // Show notification
-                if (audioTrack.enabled) {
-                    showNotification('Microphone ON - You are now speaking!', 'success');
-                    console.log("✅ Microphone UNMUTED");
-                } else {
-                    showNotification('Microphone OFF - You are muted', 'warning');
-                    console.log("🔇 Microphone MUTED");
-                }
-                
-                // Update Firebase if connected
-                updateFirebaseMicStatus();
-                
-                // Update user list
-                updateUserList([{
-                    id: myId,
-                    isMuted: isMuted,
-                    isMe: true
-                }]);
-                
-            } catch (error) {
-                console.error("Error toggling microphone:", error);
-                showNotification('Error: ' + error.message, 'error');
-            }
-        }
-        
-        // Setup Firebase connection
-        function setupFirebaseConnection() {
             const userRef = database.ref('voice_users/' + myId);
-            
-            // Set initial user data
-            userRef.set({
-                id: myId,
-                isMuted: isMuted,
-                lastSeen: Date.now(),
-                connected: true
-            });
-            
-            // Update periodically
-            setInterval(() => {
-                if (microphoneGranted) {
-                    userRef.update({
-                        lastSeen: Date.now(),
-                        isMuted: isMuted
-                    });
-                }
-            }, 5000);
-            
-            // Remove on disconnect
+            userRef.set({ id: myId, isMuted: true, lastSeen: Date.now() });
             userRef.onDisconnect().remove();
-            
-            // Listen for other users
-            database.ref('voice_users').on('value', handleUsersUpdate);
-        }
-        
-        // Update Firebase mic status
-        function updateFirebaseMicStatus() {
-            if (!microphoneGranted) return;
-            
-            database.ref('voice_users/' + myId).update({
-                isMuted: isMuted,
-                lastSeen: Date.now()
+
+            // Signaling: Listen for offers/signals
+            database.ref('signals/' + myId).on('child_added', snapshot => {
+                const data = snapshot.val();
+                handleSignal(data.from, data.signal);
+                snapshot.ref.remove();
             });
-        }
-        
-        // Handle users update
-        function handleUsersUpdate(snapshot) {
-            const users = snapshot.val();
-            if (!users) return;
-            
-            const now = Date.now();
-            const activeUsers = [];
-            
-            // Add myself first
-            activeUsers.push({
-                id: myId,
-                isMuted: isMuted,
-                isMe: true
+
+            // Watch users
+            database.ref('voice_users').on('value', snapshot => {
+                const users = snapshot.val() || {};
+                updateUserList(users);
+                managePeers(users);
             });
-            
-            // Add other active users (last seen within 20 seconds)
-            for (const userId in users) {
-                if (userId !== myId) {
-                    const user = users[userId];
-                    if (now - user.lastSeen < 20000) { // 20 seconds threshold
-                        activeUsers.push({
-                            id: user.id,
-                            isMuted: user.isMuted,
-                            isMe: false
-                        });
-                    }
+
+            setupControls(hasMic);
+        }
+
+        function managePeers(users) {
+            Object.keys(users).forEach(userId => {
+                if (userId !== myId && !peers[userId]) {
+                    // Start connection (initiator)
+                    createPeer(userId, true);
                 }
-            }
-            
-            // Update UI
-            updateUserList(activeUsers);
+            });
         }
-        
-        // Update user list UI
+
+        function createPeer(userId, initiator) {
+            const peer = new SimplePeer({
+                initiator: initiator,
+                trickle: false,
+                stream: localStream
+            });
+
+            peer.on('signal', signal => {
+                database.ref('signals/' + userId).push({ from: myId, signal: JSON.stringify(signal) });
+            });
+
+            peer.on('stream', stream => {
+                let audio = document.getElementById('audio_' + userId);
+                if (!audio) {
+                    audio = document.createElement('audio');
+                    audio.id = 'audio_' + userId;
+                    audio.autoplay = true;
+                    document.body.appendChild(audio);
+                }
+                audio.srcObject = stream;
+                audio.muted = !speakerEnabled;
+            });
+
+            peer.on('close', () => {
+                if(peers[userId]) delete peers[userId];
+                const audio = document.getElementById('audio_' + userId);
+                if(audio) audio.remove();
+            });
+
+            peers[userId] = peer;
+        }
+
+        function handleSignal(fromId, signalStr) {
+            const signal = JSON.parse(signalStr);
+            if (!peers[fromId]) {
+                createPeer(fromId, false);
+            }
+            peers[fromId].signal(signal);
+        }
+
         function updateUserList(users) {
-            const userList = document.getElementById('userList');
-            const userCount = document.getElementById('userCount');
+            const list = document.getElementById('userList');
+            const count = document.getElementById('userCount');
+            const userArray = Object.values(users);
+            count.textContent = `${userArray.length} Online`;
             
-            // Update count
-            userCount.textContent = `${users.length} Online`;
-            
-            // Generate HTML
-            let html = '';
-            users.forEach(user => {
-                const isSpeaking = !user.isMuted;
-                
-                html += `
-                    <div class="user-card ${user.isMe ? 'me' : ''}">
-                        <div class="avatar ${isSpeaking ? 'speaking' : ''}">
-                            <i class="fas fa-user"></i>
-                        </div>
-                        <div class="user-info">
-                            <div class="user-name">
-                                ${user.isMe ? 'You (Me)' : user.id}
-                            </div>
-                            <div class="user-status">
-                                <span class="status-icon">
-                                    <i class="fas fa-${isSpeaking ? 'microphone' : 'microphone-slash'}"></i>
-                                </span>
-                                <span class="status-text">
-                                    ${isSpeaking ? 'Speaking' : 'Muted'}
-                                </span>
-                            </div>
+            list.innerHTML = userArray.map(user => `
+                <div class="user-card ${user.id === myId ? 'me' : ''}">
+                    <div class="avatar ${!user.isMuted ? 'speaking' : ''}"><i class="fas fa-user"></i></div>
+                    <div class="user-info">
+                        <div class="user-name">${user.id === myId ? 'You' : user.id}</div>
+                        <div class="user-status">
+                            <i class="fas fa-${user.isMuted ? 'microphone-slash' : 'microphone'}"></i>
+                            <span>${user.isMuted ? 'Muted' : 'Speaking'}</span>
                         </div>
                     </div>
-                `;
-            });
-            
-            userList.innerHTML = html;
-            document.title = `Guild Live (${users.length} Online)`;
+                </div>
+            `).join('');
         }
-        
-        // Setup other controls
-        function setupControls() {
-            // Speaker button
-            document.getElementById('speakerBtn').onclick = () => {
-                const btn = document.getElementById('speakerBtn');
-                const isActive = btn.classList.contains('active');
-                
-                if (isActive) {
-                    btn.classList.remove('active');
-                    document.querySelector('#speakerBtn .icon-circle i').className = 'fas fa-volume-mute';
-                    showNotification('All speakers muted', 'warning');
-                } else {
-                    btn.classList.add('active');
-                    document.querySelector('#speakerBtn .icon-circle i').className = 'fas fa-volume-up';
-                    showNotification('All speakers unmuted', 'success');
-                }
-            };
-            
-            // Leave button
-            document.getElementById('leaveBtn').onclick = () => {
-                if (confirm("Are you sure you want to leave the voice chat?")) {
-                    // Cleanup Firebase
-                    if (microphoneGranted) {
-                        database.ref('voice_users/' + myId).remove();
-                    }
-                    
-                    // Stop local stream
-                    if (localStream) {
-                        localStream.getTracks().forEach(track => track.stop());
-                    }
-                    
-                    // Redirect
-                    location.reload();
-                }
-            };
-        }
-        
-        // Initialize when page loads
-        window.addEventListener('load', () => {
-            // Show permission modal
-            setTimeout(() => {
-                document.getElementById('permissionModal').style.display = 'flex';
-            }, 500);
-        });
-        
-        // Cleanup on page unload
-        window.addEventListener('beforeunload', () => {
-            if (microphoneGranted) {
-                database.ref('voice_users/' + myId).remove();
+
+        function setupControls(hasMic) {
+            const micBtn = document.getElementById('micBtn');
+            if (!hasMic) {
+                micBtn.classList.add('btn-disabled');
+                return;
             }
-        });
+
+            micBtn.onclick = () => {
+                isMuted = !isMuted;
+                localStream.getAudioTracks()[0].enabled = !isMuted;
+                micBtn.classList.toggle('active', !isMuted);
+                document.getElementById('micIcon').className = isMuted ? 'fas fa-microphone-slash' : 'fas fa-microphone';
+                document.getElementById('micText').textContent = isMuted ? 'Unmute' : 'Mute';
+                database.ref('voice_users/' + myId).update({ isMuted: isMuted });
+            };
+
+            document.getElementById('speakerBtn').onclick = () => {
+                speakerEnabled = !speakerEnabled;
+                document.getElementById('speakerBtn').classList.toggle('active', speakerEnabled);
+                document.querySelectorAll('audio').forEach(a => a.muted = !speakerEnabled);
+            };
+
+            document.getElementById('leaveBtn').onclick = () => location.reload();
+        }
+
+        window.onload = () => {
+            setTimeout(() => document.getElementById('permissionModal').style.display = 'flex', 500);
+        };
     </script>
 </body>
 </html>
