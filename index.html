@@ -5,11 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Guild Live - Voice & Stream</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/simple-peer/9.11.1/simplepeer.min.js"></script>
-
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { background-color: #0d141f; font-family: sans-serif; color: white; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
@@ -27,37 +23,39 @@
         .active .icon-circle { background-color: #3b82f6; }
         .btn-red .icon-circle { background-color: #ef4444; }
         
-        /* Status indicator */
-        .status-indicator {
-            font-size: 12px;
-            padding: 2px 8px;
+        .status-badge {
+            font-size: 11px;
+            padding: 2px 6px;
             border-radius: 10px;
-            background: #374151;
             margin-top: 3px;
             display: inline-block;
         }
-        
-        .status-connected {
-            background: #10b981;
-        }
-        
-        .status-muted {
-            background: #6b7280;
-        }
-        
-        .status-speaking {
-            background: #3b82f6;
-        }
+        .connected { background: #10b981; }
+        .disconnected { background: #6b7280; }
+        .speaking { background: #3b82f6; }
+        .muted { background: #ef4444; }
     </style>
 </head>
 <body>
 
-    <div class="banner" id="videoContainer"></div>
+    <div class="banner" id="videoContainer">
+        <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #94a3b8;">
+            <div style="text-align: center;">
+                <i class="fas fa-broadcast-tower" style="font-size: 40px; margin-bottom: 10px;"></i>
+                <p>Guild Live Voice Chat</p>
+                <p style="font-size: 14px; margin-top: 5px;" id="connectionStatus">Connecting...</p>
+            </div>
+        </div>
+    </div>
 
     <div class="content">
+        <div style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
+            <h3>Voice Participants</h3>
+            <span id="userCount" style="background: #3b82f6; padding: 3px 10px; border-radius: 15px; font-size: 14px;">0 Online</span>
+        </div>
         <div class="user-list" id="userList">
             <div style="text-align: center; padding: 20px; color: #94a3b8;">
-                <i class="fas fa-spinner fa-spin"></i> Loading...
+                <i class="fas fa-spinner fa-spin"></i> Loading users...
             </div>
         </div>
     </div>
@@ -69,233 +67,296 @@
     </div>
 
     <script>
-        const config = {
-            apiKey: "AIzaSyCSoTqqSC_NqigWrHwE4Q8IUvWRP9TrxG8",
-            databaseURL: "https://top-up-4db01-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "top-up-4db01",
-            appId: "1:264548197473:android:4c986618c48182125d7620"
-        };
-        
-        firebase.initializeApp(config);
-        const db = firebase.database();
-        const myId = "User_" + Math.floor(Math.random() * 9000 + 1000);
-        let localStream;
-        const peers = {};
-        const processedSignals = new Set();
-        const activeConnections = new Set();
-        const audioElements = {};
-
-        // ১. ইউটিউব লাইভ
-        db.ref('live_stream/video_id').on('value', snap => {
-            if(snap.val()) {
-                document.getElementById('videoContainer').innerHTML = `<iframe id="ytPlayer" src="https://www.youtube.com/embed/${snap.val()}?autoplay=1&mute=0"></iframe>`;
-            } else {
-                document.getElementById('videoContainer').innerHTML = `
-                    <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #94a3b8;">
-                        <div style="text-align: center;">
-                            <i class="fas fa-video-slash" style="font-size: 40px; margin-bottom: 10px;"></i>
-                            <p>No live stream active</p>
-                        </div>
-                    </div>
-                `;
+        class SignalingServer {
+            constructor() {
+                this.ws = null;
+                this.reconnectInterval = 3000;
+                this.messageHandlers = {};
+                this.myId = null;
+                this.connected = false;
             }
-        });
+            
+            connect() {
+                return new Promise((resolve, reject) => {
+                    try {
+                        // Public WebSocket server ব্যবহার করুন
+                        const wsUrl = 'wss://ws.postman-echo.com/raw';
+                        // Alternative servers:
+                        // wss://echo.websocket.org
+                        // wss://ws.postman-echo.com/raw
+                        
+                        this.ws = new WebSocket(wsUrl);
+                        
+                        this.ws.onopen = () => {
+                            console.log('✅ WebSocket connected');
+                            this.connected = true;
+                            this.myId = 'User_' + Math.floor(Math.random() * 9000 + 1000);
+                            document.getElementById('connectionStatus').innerHTML = 
+                                `<span style="color: #10b981;">Connected as ${this.myId}</span>`;
+                            resolve(this.myId);
+                        };
+                        
+                        this.ws.onmessage = (event) => {
+                            try {
+                                const data = JSON.parse(event.data);
+                                this.handleMessage(data);
+                            } catch (e) {
+                                console.log('Raw message:', event.data);
+                            }
+                        };
+                        
+                        this.ws.onerror = (error) => {
+                            console.error('WebSocket error:', error);
+                            document.getElementById('connectionStatus').innerHTML = 
+                                `<span style="color: #ef4444;">Connection error</span>`;
+                        };
+                        
+                        this.ws.onclose = () => {
+                            console.log('WebSocket disconnected');
+                            this.connected = false;
+                            document.getElementById('connectionStatus').innerHTML = 
+                                `<span style="color: #ef4444;">Disconnected - Reconnecting...</span>`;
+                            setTimeout(() => this.connect(), this.reconnectInterval);
+                        };
+                        
+                    } catch (error) {
+                        reject(error);
+                    }
+                });
+            }
+            
+            send(type, data) {
+                if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+                    const message = JSON.stringify({ type, ...data, sender: this.myId });
+                    this.ws.send(message);
+                }
+            }
+            
+            on(type, handler) {
+                this.messageHandlers[type] = handler;
+            }
+            
+            handleMessage(data) {
+                if (data.type && this.messageHandlers[data.type]) {
+                    this.messageHandlers[data.type](data);
+                }
+            }
+        }
 
-        // ২. অডিও এবং সিগন্যালিং শুরু
-        async function startApp() {
-            try {
-                console.log("Starting app...");
+        class VoiceChat {
+            constructor() {
+                this.signaling = new SignalingServer();
+                this.myId = null;
+                this.localStream = null;
+                this.peers = {};
+                this.users = {};
+                this.audioElements = {};
+                this.isMuted = true;
                 
-                // Try to get microphone access
-                localStream = await navigator.mediaDevices.getUserMedia({ 
-                    audio: {
-                        echoCancellation: true,
-                        noiseSuppression: true,
-                        autoGainControl: true
+                this.init();
+            }
+            
+            async init() {
+                try {
+                    // Get microphone access
+                    this.localStream = await navigator.mediaDevices.getUserMedia({
+                        audio: {
+                            echoCancellation: true,
+                            noiseSuppression: true,
+                            autoGainControl: true
+                        }
+                    });
+                    
+                    // Start muted
+                    this.localStream.getAudioTracks()[0].enabled = false;
+                    
+                    // Connect to signaling server
+                    this.myId = await this.signaling.connect();
+                    
+                    // Setup message handlers
+                    this.setupHandlers();
+                    
+                    // Send join message
+                    this.signaling.send('join', {
+                        id: this.myId,
+                        isMuted: this.isMuted
+                    });
+                    
+                    // Setup UI
+                    this.setupUI();
+                    
+                    // Periodically send heartbeat
+                    setInterval(() => {
+                        if (this.signaling.connected) {
+                            this.signaling.send('heartbeat', {
+                                id: this.myId,
+                                isMuted: this.isMuted
+                            });
+                        }
+                    }, 5000);
+                    
+                    console.log('Voice chat initialized:', this.myId);
+                    
+                } catch (error) {
+                    console.error('Initialization error:', error);
+                    alert('Microphone access required for voice chat!');
+                }
+            }
+            
+            setupHandlers() {
+                // Handle user joined
+                this.signaling.on('user-joined', (data) => {
+                    if (data.id !== this.myId) {
+                        this.addUser(data.id, data.isMuted);
+                        this.connectToUser(data.id);
                     }
                 });
                 
-                console.log("Microphone access granted");
-                
-                // শুরুতে মিউট
-                localStream.getAudioTracks()[0].enabled = false;
-                
-                // Cleanup any existing data
-                db.ref('users/' + myId).remove();
-                await new Promise(resolve => setTimeout(resolve, 500));
-                
-                // Set user data
-                await db.ref('users/' + myId).set({ 
-                    id: myId, 
-                    isMuted: true,
-                    timestamp: Date.now()
+                // Handle user left
+                this.signaling.on('user-left', (data) => {
+                    this.removeUser(data.id);
                 });
                 
-                console.log("User data saved:", myId);
-                
-                // Cleanup on disconnect
-                db.ref('users/' + myId).onDisconnect().remove();
-                
-                // Listen for existing users
-                setupUserListeners();
-                
-                // Setup signal listener
-                setupSignalListener();
-                
-                // Initial connection to existing users
-                connectToExistingUsers();
-                
-            } catch (error) {
-                console.error("Error starting app:", error);
-                document.getElementById('userList').innerHTML = `
-                    <div style="text-align: center; padding: 40px; color: #ef4444;">
-                        <i class="fas fa-exclamation-triangle" style="font-size: 40px; margin-bottom: 15px;"></i>
-                        <p>Error: ${error.message}</p>
-                        <button onclick="location.reload()" style="margin-top: 15px; padding: 8px 16px; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer;">
-                            Refresh Page
-                        </button>
-                    </div>
-                `;
-            }
-        }
-
-        function setupUserListeners() {
-            // নতুন user যোগদান
-            db.ref('users').on('child_added', snapshot => {
-                const user = snapshot.val();
-                console.log("User added:", user.id);
-                
-                if (user.id !== myId && !peers[user.id] && !activeConnections.has(user.id)) {
-                    activeConnections.add(user.id);
-                    setTimeout(() => initiateCall(user.id), 1000);
-                }
-            });
-
-            // User remove হলে cleanup
-            db.ref('users').on('child_removed', snapshot => {
-                const userId = snapshot.key;
-                console.log("User removed:", userId);
-                
-                cleanupPeer(userId);
-                activeConnections.delete(userId);
-            });
-        }
-
-        function setupSignalListener() {
-            db.ref('signals/' + myId).on('child_added', snapshot => {
-                const signal = snapshot.val();
-                const signalKey = snapshot.key;
-                
-                console.log("Signal received from:", signal?.from, "key:", signalKey);
-                
-                if(!signal || !signal.from || signal.from === myId) {
-                    db.ref('signals/' + myId).child(signalKey).remove();
-                    return;
-                }
-                
-                if(processedSignals.has(signalKey)) {
-                    db.ref('signals/' + myId).child(signalKey).remove();
-                    return;
-                }
-                
-                processedSignals.add(signalKey);
-                handleSignal(signal, signalKey);
-            });
-        }
-
-        async function connectToExistingUsers() {
-            const snapshot = await db.ref('users').once('value');
-            const users = snapshot.val();
-            
-            if(!users) return;
-            
-            console.log("Existing users:", Object.keys(users));
-            
-            // Connect to all existing users except myself
-            for(let id in users) {
-                if(users[id].id !== myId && !peers[users[id].id] && !activeConnections.has(users[id].id)) {
-                    console.log("Connecting to existing user:", users[id].id);
-                    activeConnections.add(users[id].id);
-                    setTimeout(() => initiateCall(users[id].id), 500);
-                }
-            }
-        }
-
-        function initiateCall(targetId) {
-            if(peers[targetId] || !localStream) {
-                console.log("Skipping call to", targetId, "- already connected or no stream");
-                return;
-            }
-            
-            console.log("Initiating call to:", targetId);
-            
-            const peer = new SimplePeer({ 
-                initiator: true, 
-                trickle: false, 
-                stream: localStream,
-                config: {
-                    iceServers: [
-                        { urls: 'stun:stun.l.google.com:19302' },
-                        { urls: 'stun:stun1.l.google.com:19302' },
-                        { urls: 'stun:stun2.l.google.com:19302' }
-                    ]
-                }
-            });
-            
-            peer.on('signal', data => {
-                console.log("Sending signal to:", targetId);
-                db.ref('signals/' + targetId).push({ 
-                    from: myId, 
-                    signal: data 
-                }).then(ref => {
-                    setTimeout(() => ref.remove(), 15000);
+                // Handle user list
+                this.signaling.on('user-list', (data) => {
+                    this.updateUserList(data.users);
                 });
-            });
-            
-            peer.on('stream', stream => {
-                console.log("Received stream from:", targetId);
-                playRemoteStream(stream, targetId);
-            });
-            
-            peer.on('error', err => {
-                console.error('Peer error for', targetId, ':', err);
-                cleanupPeer(targetId);
-            });
-            
-            peer.on('close', () => {
-                console.log("Peer closed for:", targetId);
-                cleanupPeer(targetId);
-            });
-            
-            peer.on('connect', () => {
-                console.log("✅ Connected to:", targetId);
-                updateConnectionStatus(targetId, true);
-            });
-            
-            peer.on('data', data => {
-                console.log("Data received from", targetId, ":", data);
-            });
-            
-            peers[targetId] = peer;
-        }
-
-        function handleSignal(data, signalKey) {
-            console.log("Handling signal from:", data.from);
-            
-            if(!data || !data.from || !data.signal) {
-                db.ref('signals/' + myId).child(signalKey).remove();
-                return;
-            }
-
-            let peer = peers[data.from];
-            
-            if (!peer) {
-                console.log("Creating peer for:", data.from);
                 
-                peer = new SimplePeer({ 
-                    initiator: false, 
-                    trickle: false, 
-                    stream: localStream,
+                // Handle offer signal
+                this.signaling.on('offer', (data) => {
+                    this.handleOffer(data.from, data.signal);
+                });
+                
+                // Handle answer signal
+                this.signaling.on('answer', (data) => {
+                    this.handleAnswer(data.from, data.signal);
+                });
+                
+                // Handle ICE candidate
+                this.signaling.on('ice-candidate', (data) => {
+                    this.handleICECandidate(data.from, data.candidate);
+                });
+                
+                // Handle user update
+                this.signaling.on('user-update', (data) => {
+                    this.updateUser(data.id, data.isMuted);
+                });
+            }
+            
+            setupUI() {
+                // Mic button
+                document.getElementById('micBtn').onclick = () => {
+                    if (!this.localStream) return;
+                    
+                    const audioTrack = this.localStream.getAudioTracks()[0];
+                    this.isMuted = !audioTrack.enabled;
+                    audioTrack.enabled = !this.isMuted;
+                    
+                    // Update UI
+                    document.getElementById('micBtn').classList.toggle('active', !this.isMuted);
+                    document.getElementById('micIcon').className = this.isMuted ? 
+                        'fas fa-microphone-slash' : 'fas fa-microphone';
+                    document.getElementById('micText').innerText = this.isMuted ? 'Unmute' : 'Mute';
+                    
+                    // Broadcast mute status
+                    this.signaling.send('user-update', {
+                        id: this.myId,
+                        isMuted: this.isMuted
+                    });
+                    
+                    this.updateUI();
+                };
+                
+                // Speaker button
+                document.getElementById('speakerBtn').onclick = () => {
+                    const btn = document.getElementById('speakerBtn');
+                    const isActive = btn.classList.contains('active');
+                    
+                    if (isActive) {
+                        btn.classList.remove('active');
+                        document.querySelector('#speakerBtn .icon-circle i').className = 'fas fa-volume-mute';
+                        
+                        // Mute all remote audio
+                        Object.values(this.audioElements).forEach(audio => {
+                            audio.volume = 0;
+                        });
+                    } else {
+                        btn.classList.add('active');
+                        document.querySelector('#speakerBtn .icon-circle i').className = 'fas fa-volume-up';
+                        
+                        // Unmute all remote audio
+                        Object.values(this.audioElements).forEach(audio => {
+                            audio.volume = 1.0;
+                        });
+                    }
+                };
+                
+                // Leave button
+                document.getElementById('leaveBtn').onclick = () => {
+                    if (confirm('Are you sure you want to leave?')) {
+                        this.leaveRoom();
+                        location.reload();
+                    }
+                };
+            }
+            
+            addUser(userId, isMuted) {
+                if (!this.users[userId]) {
+                    this.users[userId] = {
+                        id: userId,
+                        isMuted: isMuted || true,
+                        connected: false
+                    };
+                    this.updateUI();
+                }
+            }
+            
+            removeUser(userId) {
+                // Cleanup peer connection
+                if (this.peers[userId]) {
+                    this.peers[userId].destroy();
+                    delete this.peers[userId];
+                }
+                
+                // Cleanup audio element
+                if (this.audioElements[userId]) {
+                    this.audioElements[userId].pause();
+                    this.audioElements[userId].srcObject = null;
+                    this.audioElements[userId].remove();
+                    delete this.audioElements[userId];
+                }
+                
+                // Remove from users list
+                delete this.users[userId];
+                this.updateUI();
+            }
+            
+            updateUser(userId, isMuted) {
+                if (this.users[userId]) {
+                    this.users[userId].isMuted = isMuted;
+                    this.updateUI();
+                }
+            }
+            
+            updateUserList(users) {
+                this.users = {};
+                users.forEach(user => {
+                    if (user.id !== this.myId) {
+                        this.users[user.id] = user;
+                    }
+                });
+                this.updateUI();
+            }
+            
+            connectToUser(userId) {
+                if (this.peers[userId] || userId === this.myId) return;
+                
+                console.log('Connecting to:', userId);
+                
+                const peer = new SimplePeer({
+                    initiator: true,
+                    trickle: true,
+                    stream: this.localStream,
                     config: {
                         iceServers: [
                             { urls: 'stun:stun.l.google.com:19302' },
@@ -305,263 +366,173 @@
                     }
                 });
                 
-                peer.on('signal', signalData => {
-                    console.log("Responding to signal from:", data.from);
-                    db.ref('signals/' + data.from).push({ 
-                        from: myId, 
-                        signal: signalData 
-                    }).then(ref => {
-                        setTimeout(() => ref.remove(), 15000);
+                peer.on('signal', (signal) => {
+                    this.signaling.send('offer', {
+                        to: userId,
+                        signal: signal
                     });
                 });
                 
-                peer.on('stream', stream => {
-                    console.log("✅ Stream received from responder:", data.from);
-                    playRemoteStream(stream, data.from);
+                peer.on('stream', (stream) => {
+                    this.handleRemoteStream(userId, stream);
                 });
                 
-                peer.on('error', err => {
-                    console.error('Responder peer error:', err);
-                    cleanupPeer(data.from);
+                peer.on('error', (err) => {
+                    console.error('Peer error:', err);
+                    this.removeUser(userId);
                 });
                 
                 peer.on('close', () => {
-                    console.log("Responder peer closed:", data.from);
-                    cleanupPeer(data.from);
+                    this.removeUser(userId);
                 });
                 
-                peer.on('connect', () => {
-                    console.log("✅ Responder connected:", data.from);
-                    updateConnectionStatus(data.from, true);
-                });
+                this.peers[userId] = peer;
+            }
+            
+            handleOffer(fromUserId, signal) {
+                if (this.peers[fromUserId]) return;
                 
-                peers[data.from] = peer;
-                activeConnections.add(data.from);
-            }
-            
-            try {
-                console.log("Applying signal from:", data.from);
-                peer.signal(data.signal);
-            } catch(err) {
-                console.error('Error applying signal:', err);
-            }
-            
-            setTimeout(() => {
-                db.ref('signals/' + myId).child(signalKey).remove();
-                processedSignals.delete(signalKey);
-            }, 1000);
-        }
-
-        function playRemoteStream(stream, userId) {
-            console.log("Playing stream for:", userId);
-            
-            let audio = audioElements[userId];
-            if(!audio) {
-                audio = document.createElement('audio');
-                audio.id = 'audio-' + userId;
-                audio.autoplay = true;
-                audio.volume = 1.0;
-                audio.setAttribute('data-user', userId);
-                document.body.appendChild(audio);
-                audioElements[userId] = audio;
-            }
-            
-            try {
-                audio.srcObject = stream;
-                console.log("✅ Audio stream set for:", userId);
-            } catch(e) {
-                console.error('Error setting audio source:', e);
-            }
-        }
-
-        function cleanupPeer(userId) {
-            console.log("Cleaning up peer:", userId);
-            
-            if(peers[userId]) {
-                try {
-                    peers[userId].destroy();
-                } catch(e) {
-                    console.log("Error destroying peer:", e);
-                }
-                delete peers[userId];
-            }
-            
-            if(audioElements[userId]) {
-                try {
-                    audioElements[userId].pause();
-                    audioElements[userId].srcObject = null;
-                    audioElements[userId].remove();
-                } catch(e) {}
-                delete audioElements[userId];
-            }
-            
-            activeConnections.delete(userId);
-            
-            for(const key of processedSignals) {
-                if(key.includes(userId)) {
-                    processedSignals.delete(key);
-                }
-            }
-            
-            updateConnectionStatus(userId, false);
-        }
-
-        function updateConnectionStatus(userId, connected) {
-            // This function updates UI to show connection status
-            const userCards = document.querySelectorAll('.user-card');
-            userCards.forEach(card => {
-                const nameElement = card.querySelector('.user-name');
-                if(nameElement && nameElement.textContent.includes(userId)) {
-                    const statusSpan = card.querySelector('.connection-status');
-                    if(statusSpan) {
-                        statusSpan.textContent = connected ? 'Connected' : 'Disconnected';
-                        statusSpan.className = `status-indicator ${connected ? 'status-connected' : ''}`;
+                console.log('Received offer from:', fromUserId);
+                
+                const peer = new SimplePeer({
+                    initiator: false,
+                    trickle: true,
+                    stream: this.localStream,
+                    config: {
+                        iceServers: [
+                            { urls: 'stun:stun.l.google.com:19302' },
+                            { urls: 'stun:stun1.l.google.com:19302' },
+                            { urls: 'stun:stun2.l.google.com:19302' }
+                        ]
                     }
-                }
-            });
-        }
-
-        // ৩. বাটন কন্ট্রোল
-        document.getElementById('micBtn').onclick = () => {
-            if(!localStream || localStream.getAudioTracks().length === 0) {
-                alert("Microphone not available. Please refresh the page.");
-                return;
-            }
-            
-            const audioTrack = localStream.getAudioTracks()[0];
-            const isCurrentlyEnabled = audioTrack.enabled;
-            const newState = !isCurrentlyEnabled;
-            
-            audioTrack.enabled = newState;
-            
-            document.getElementById('micBtn').classList.toggle('active', newState);
-            document.getElementById('micIcon').className = newState ? 'fas fa-microphone' : 'fas fa-microphone-slash';
-            document.getElementById('micText').innerText = newState ? 'Mute' : 'Unmute';
-            
-            db.ref('users/' + myId).update({ 
-                isMuted: !newState,
-                timestamp: Date.now()
-            });
-            
-            console.log("Mic state changed to:", newState ? "Unmuted" : "Muted");
-        };
-
-        // User list update - FIXED version
-        db.ref('users').on('value', snap => {
-            const users = snap.val();
-            const list = document.getElementById('userList');
-            
-            if(!users) {
-                list.innerHTML = '<div style="text-align: center; padding: 20px; color: #94a3b8;">No users online</div>';
-                return;
-            }
-            
-            let html = '';
-            const userArray = Object.values(users);
-            const realUserCount = userArray.length;
-            
-            console.log("Real user count:", realUserCount, "Users:", userArray.map(u => u.id));
-            
-            // Sort: Me first, then others
-            userArray.sort((a, b) => {
-                if(a.id === myId) return -1;
-                if(b.id === myId) return 1;
-                return (b.timestamp || 0) - (a.timestamp || 0);
-            });
-            
-            userArray.forEach(u => {
-                const isMe = u.id === myId;
-                const isSpeaking = !u.isMuted;
-                const isConnected = peers[u.id] && peers[u.id].connected;
+                });
                 
-                html += `
-                    <div class="user-card">
-                        <div class="avatar ${isSpeaking ? 'voice-active' : ''}">
-                            <i class="fas fa-user"></i>
-                        </div>
-                        <div class="user-name">
-                            <strong>${isMe ? 'You (Me)' : u.id}</strong><br>
-                            <span class="status-indicator ${isConnected ? 'status-connected' : ''}">
-                                ${isMe ? 'Me' : (isConnected ? 'Connected' : 'Connecting...')}
-                            </span>
-                            <span class="status-indicator ${isSpeaking ? 'status-speaking' : 'status-muted'}">
-                                ${isSpeaking ? 'Speaking' : 'Muted'}
-                            </span>
-                        </div>
-                    </div>
-                `;
-            });
+                peer.on('signal', (answerSignal) => {
+                    this.signaling.send('answer', {
+                        to: fromUserId,
+                        signal: answerSignal
+                    });
+                });
+                
+                peer.on('stream', (stream) => {
+                    this.handleRemoteStream(fromUserId, stream);
+                });
+                
+                peer.on('error', (err) => {
+                    console.error('Peer error:', err);
+                    this.removeUser(fromUserId);
+                });
+                
+                peer.signal(signal);
+                this.peers[fromUserId] = peer;
+            }
             
-            list.innerHTML = html;
-            
-            // Update title with real count
-            document.title = `Guild Live (${realUserCount} Online)`;
-        });
-
-        document.getElementById('leaveBtn').onclick = () => {
-            if(confirm("Are you sure you want to leave the voice chat?")) {
-                // Cleanup all peers
-                for(const userId in peers) {
-                    cleanupPeer(userId);
+            handleAnswer(fromUserId, signal) {
+                const peer = this.peers[fromUserId];
+                if (peer) {
+                    peer.signal(signal);
                 }
+            }
+            
+            handleICECandidate(fromUserId, candidate) {
+                const peer = this.peers[fromUserId];
+                if (peer && candidate) {
+                    peer.addIceCandidate(new RTCIceCandidate(candidate));
+                }
+            }
+            
+            handleRemoteStream(userId, stream) {
+                console.log('Received stream from:', userId);
+                
+                let audio = this.audioElements[userId];
+                if (!audio) {
+                    audio = document.createElement('audio');
+                    audio.id = 'audio-' + userId;
+                    audio.autoplay = true;
+                    audio.volume = 1.0;
+                    document.body.appendChild(audio);
+                    this.audioElements[userId] = audio;
+                }
+                
+                audio.srcObject = stream;
+                
+                // Update user connection status
+                if (this.users[userId]) {
+                    this.users[userId].connected = true;
+                    this.updateUI();
+                }
+            }
+            
+            updateUI() {
+                const userList = document.getElementById('userList');
+                const userCount = document.getElementById('userCount');
+                
+                // Add myself to the list
+                const allUsers = {
+                    [this.myId]: {
+                        id: this.myId,
+                        isMuted: this.isMuted,
+                        connected: true
+                    },
+                    ...this.users
+                };
+                
+                const usersArray = Object.values(allUsers);
+                const onlineCount = usersArray.length;
+                
+                userCount.textContent = `${onlineCount} Online`;
+                
+                let html = '';
+                usersArray.forEach(user => {
+                    const isMe = user.id === this.myId;
+                    const isSpeaking = !user.isMuted && user.connected;
+                    
+                    html += `
+                        <div class="user-card">
+                            <div class="avatar ${isSpeaking ? 'voice-active' : ''}">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div>
+                                <strong>${isMe ? 'You (Me)' : user.id}</strong><br>
+                                <span class="status-badge ${user.connected ? 'connected' : 'disconnected'}">
+                                    ${user.connected ? 'Connected' : 'Connecting'}
+                                </span>
+                                <span class="status-badge ${isSpeaking ? 'speaking' : 'muted'}">
+                                    ${isSpeaking ? 'Speaking' : 'Muted'}
+                                </span>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                userList.innerHTML = html || '<div style="text-align: center; padding: 20px; color: #94a3b8;">No users online</div>';
+            }
+            
+            leaveRoom() {
+                // Send leave message
+                this.signaling.send('leave', { id: this.myId });
+                
+                // Cleanup all peers
+                Object.keys(this.peers).forEach(userId => {
+                    this.removeUser(userId);
+                });
                 
                 // Stop local stream
-                if(localStream) {
-                    localStream.getTracks().forEach(track => track.stop());
+                if (this.localStream) {
+                    this.localStream.getTracks().forEach(track => track.stop());
                 }
                 
-                // Remove from Firebase
-                db.ref('users/' + myId).remove();
-                db.ref('signals/' + myId).remove();
-                
-                // Redirect after cleanup
-                setTimeout(() => {
-                    window.location.href = window.location.href;
-                }, 500);
+                // Close WebSocket
+                if (this.signaling.ws) {
+                    this.signaling.ws.close();
+                }
             }
-        };
+        }
 
-        // Speaker button control
-        document.getElementById('speakerBtn').onclick = () => {
-            const btn = document.getElementById('speakerBtn');
-            const isActive = btn.classList.contains('active');
-            
-            if(isActive) {
-                btn.classList.remove('active');
-                document.querySelector('#speakerBtn .icon-circle i').className = 'fas fa-volume-mute';
-                
-                Object.values(audioElements).forEach(audio => {
-                    audio.volume = 0;
-                });
-                
-                console.log("All speakers muted");
-            } else {
-                btn.classList.add('active');
-                document.querySelector('#speakerBtn .icon-circle i').className = 'fas fa-volume-up';
-                
-                Object.values(audioElements).forEach(audio => {
-                    audio.volume = 1.0;
-                });
-                
-                console.log("Speakers unmuted");
-            }
-        };
-
-        // Auto cleanup on page unload
-        window.addEventListener('beforeunload', (e) => {
-            db.ref('users/' + myId).remove();
-            db.ref('signals/' + myId).remove();
-            
-            if(localStream) {
-                localStream.getTracks().forEach(track => track.stop());
-            }
+        // Start the voice chat when page loads
+        window.addEventListener('load', () => {
+            new VoiceChat();
         });
-
-        // Debug info
-        console.log("My ID:", myId);
-        console.log("Starting app...");
-        
-        startApp();
     </script>
 </body>
-</html>
+    </html>
