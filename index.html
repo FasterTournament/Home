@@ -5,7 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Guild Live - Voice & Stream</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/simple-peer/9.11.1/simplepeer.min.js"></script>
+
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
@@ -18,34 +22,57 @@
             overflow: hidden; 
         }
         
+        .header {
+            background: linear-gradient(135deg, #1a2536 0%, #0d141f 100%);
+            padding: 12px 20px;
+            border-bottom: 1px solid #1c2a3a;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #3b82f6;
+        }
+        
+        .user-info {
+            font-size: 13px;
+            background: rgba(59, 130, 246, 0.2);
+            padding: 6px 12px;
+            border-radius: 15px;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+        
         .banner { 
             width: 100%; 
             height: 230px; 
-            background: linear-gradient(135deg, #1a2536 0%, #0d141f 100%);
-            border-bottom: 1px solid #1c2a3a;
+            background: #000; 
+            border-bottom: 1px solid #1c2a3a; 
             display: flex;
             align-items: center;
             justify-content: center;
         }
         
-        .connection-info {
+        .stream-info {
             text-align: center;
             padding: 20px;
         }
         
-        .connection-info h2 {
+        .stream-title {
             color: #3b82f6;
-            margin-bottom: 10px;
-            font-size: 24px;
+            font-size: 22px;
+            margin-bottom: 8px;
         }
         
-        .connection-status {
-            font-size: 14px;
+        .stream-status {
             color: #94a3b8;
+            font-size: 14px;
         }
         
-        .connected {
-            color: #10b981 !important;
+        .stream-status.connected {
+            color: #10b981;
             font-weight: bold;
         }
         
@@ -55,9 +82,30 @@
             overflow-y: auto; 
         }
         
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .section-title {
+            font-size: 16px;
+            color: #3b82f6;
+        }
+        
+        .online-count {
+            background: #3b82f6;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: bold;
+        }
+        
         .user-list { 
             display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); 
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); 
             gap: 12px; 
         }
         
@@ -71,15 +119,14 @@
             transition: all 0.3s ease;
         }
         
-        .user-card:hover {
-            transform: translateY(-2px);
-            border-color: rgba(59, 130, 246, 0.3);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        .user-card.me {
+            border-color: #3b82f6;
+            background: rgba(59, 130, 246, 0.1);
         }
         
         .avatar { 
-            width: 45px; 
-            height: 45px; 
+            width: 44px; 
+            height: 44px; 
             border-radius: 50%; 
             margin-right: 12px; 
             background: linear-gradient(135deg, #3b82f6, #8b5cf6);
@@ -90,56 +137,60 @@
             font-size: 18px;
         }
         
-        .voice-active { 
+        .avatar.speaking {
             border-color: #3b82f6 !important; 
-            animation: pulse 1s infinite alternate; 
+            animation: pulse 1.2s infinite alternate; 
         }
         
         @keyframes pulse { 
             0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.6); } 
-            100% { box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); } 
+            100% { box-shadow: 0 0 0 8px rgba(59, 130, 246, 0); } 
         }
         
-        .user-info {
+        .user-details {
             flex: 1;
         }
         
         .user-name {
             font-weight: bold;
             font-size: 14px;
-            margin-bottom: 4px;
+            margin-bottom: 3px;
         }
         
         .user-status {
-            font-size: 12px;
+            font-size: 11px;
             color: #94a3b8;
         }
         
         .status-dot {
-            width: 10px;
-            height: 10px;
+            width: 8px;
+            height: 8px;
             border-radius: 50%;
-            margin-left: 8px;
+            margin-left: 6px;
         }
         
         .status-online {
-            background-color: #10b981;
+            background: #10b981;
         }
         
         .status-speaking {
-            background-color: #3b82f6;
+            background: #3b82f6;
             animation: pulse 1s infinite;
         }
         
         .status-muted {
-            background-color: #ef4444;
+            background: #6b7280;
+        }
+        
+        .status-offline {
+            background: #ef4444;
         }
         
         .controls { 
             display: flex; 
             justify-content: space-around; 
             padding: 20px 10px; 
-            background: linear-gradient(to top, #0d141f, #1a2536);
+            background-color: #0d141f; 
             border-top: 1px solid #1c2a3a; 
         }
         
@@ -147,111 +198,119 @@
             display: flex; 
             flex-direction: column; 
             align-items: center; 
-            gap: 8px; 
+            gap: 6px; 
             cursor: pointer; 
             background: none; 
             border: none; 
             color: #94a3b8; 
             outline: none; 
             transition: all 0.3s ease;
-            min-width: 80px;
+            min-width: 70px;
         }
         
-        .control-btn:hover:not(:disabled) {
-            color: #ffffff;
-            transform: scale(1.05);
-        }
-        
-        .control-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
+        .control-btn:hover {
+            color: white;
+            transform: translateY(-2px);
         }
         
         .icon-circle { 
-            width: 60px; 
-            height: 60px; 
+            width: 52px; 
+            height: 52px; 
             border-radius: 50%; 
             background: linear-gradient(135deg, #2d3748, #1a2536);
             display: flex; 
             align-items: center; 
             justify-content: center; 
-            font-size: 20px; 
+            font-size: 18px; 
             color: white; 
             transition: all 0.3s ease;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
         
         .control-btn.active .icon-circle { 
             background: linear-gradient(135deg, #3b82f6, #2563eb);
-            box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
         }
         
         .btn-red .icon-circle { 
             background: linear-gradient(135deg, #ef4444, #dc2626);
         }
         
-        .btn-red:hover:not(:disabled) .icon-circle {
-            box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
+        .btn-red:hover .icon-circle {
+            box-shadow: 0 0 15px rgba(239, 68, 68, 0.3);
         }
         
         .loading {
             text-align: center;
             padding: 30px;
             color: #94a3b8;
-            font-size: 16px;
+            font-size: 14px;
         }
         
         .loading i {
-            font-size: 24px;
+            font-size: 20px;
             margin-bottom: 10px;
+            display: block;
         }
         
-        .debug-info {
-            position: fixed;
-            bottom: 10px;
-            right: 10px;
-            background: rgba(0, 0, 0, 0.7);
-            padding: 10px;
-            border-radius: 8px;
-            font-size: 12px;
-            color: #94a3b8;
-            max-width: 200px;
-            display: none;
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 6px;
         }
         
-        .show-debug {
-            position: fixed;
-            bottom: 10px;
-            left: 10px;
-            background: rgba(59, 130, 246, 0.2);
-            color: #3b82f6;
-            border: 1px solid #3b82f6;
-            padding: 5px 10px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 12px;
+        ::-webkit-scrollbar-track {
+            background: #0d141f;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #3b82f6;
+            border-radius: 3px;
+        }
+        
+        /* Connection status animation */
+        .connection-pulse {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #10b981;
+            margin-right: 6px;
+            animation: connectionPulse 2s infinite;
+        }
+        
+        @keyframes connectionPulse {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+            100% { opacity: 1; transform: scale(1); }
         }
     </style>
 </head>
 <body>
 
+    <div class="header">
+        <div class="header-title">Guild Live</div>
+        <div class="user-info" id="myIdDisplay">Loading...</div>
+    </div>
+
     <div class="banner" id="videoContainer">
-        <div class="connection-info">
-            <h2>Guild Live Voice Chat</h2>
-            <p class="connection-status" id="connectionStatus">Connecting...</p>
-            <p class="connection-status" id="userId">ID: Loading...</p>
+        <div class="stream-info">
+            <div class="stream-title">Voice Chat Room</div>
+            <div class="stream-status" id="connectionStatus">
+                <span class="connection-pulse"></span>
+                Connecting to server...
+            </div>
         </div>
     </div>
 
     <div class="content">
-        <div style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
-            <h3 style="color: #3b82f6;">Voice Participants</h3>
-            <span id="userCount" style="background: #3b82f6; padding: 5px 12px; border-radius: 15px; font-size: 14px; font-weight: bold;">0 Online</span>
+        <div class="section-header">
+            <div class="section-title">Voice Participants</div>
+            <div class="online-count" id="userCount">0 Online</div>
         </div>
         <div class="user-list" id="userList">
             <div class="loading">
-                <i class="fas fa-spinner fa-spin"></i><br>
-                Loading users...
+                <i class="fas fa-spinner fa-spin"></i>
+                Loading active users...
             </div>
         </div>
     </div>
@@ -271,501 +330,396 @@
         </button>
     </div>
 
-    <button class="show-debug" onclick="toggleDebug()">Debug Info</button>
-    <div class="debug-info" id="debugInfo">
-        <div><strong>Debug Information</strong></div>
-        <div>Local Stream: <span id="debugStream">No</span></div>
-        <div>Mic Enabled: <span id="debugMic">No</span></div>
-        <div>Peers: <span id="debugPeers">0</span></div>
-        <div>Audio Elements: <span id="debugAudio">0</span></div>
-    </div>
-
     <script>
-        // Debug mode
-        const DEBUG = true;
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCSoTqqSC_NqigWrHwE4Q8IUvWRP9TrxG8",
+            authDomain: "top-up-4db01.firebaseapp.com",
+            databaseURL: "https://top-up-4db01-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "top-up-4db01",
+            storageBucket: "top-up-4db01.appspot.com",
+            messagingSenderId: "264548197473",
+            appId: "1:264548197473:android:4c986618c48182125d7620"
+        };
         
-        class SimpleVoiceChat {
-            constructor() {
-                this.myId = 'User_' + Math.floor(Math.random() * 9000 + 1000);
-                this.localStream = null;
-                this.peers = {};
-                this.users = {};
-                this.audioElements = {};
-                this.isMuted = true;
-                this.isSpeaking = false;
-                this.connectedUsers = new Set();
-                
-                this.init();
-            }
-            
-            async init() {
-                console.log('🎤 Initializing Voice Chat...');
-                console.log('Your ID:', this.myId);
-                
-                this.updateStatus('Initializing...');
-                document.getElementById('userId').textContent = `ID: ${this.myId}`;
-                
-                try {
-                    // Get microphone permission
-                    await this.getMicrophoneAccess();
-                    
-                    // Setup UI controls
-                    this.setupControls();
-                    
-                    // Update UI
-                    this.updateUI();
-                    
-                    // Start peer discovery simulation
-                    this.startPeerDiscovery();
-                    
-                    this.updateStatus('Ready to connect');
-                    
-                } catch (error) {
-                    console.error('Initialization failed:', error);
-                    this.updateStatus('Error: ' + error.message, 'error');
-                    this.showError('Failed to initialize voice chat');
-                }
-            }
-            
-            async getMicrophoneAccess() {
-                try {
-                    console.log('Requesting microphone access...');
-                    
-                    // Try to get microphone
-                    this.localStream = await navigator.mediaDevices.getUserMedia({
-                        audio: {
-                            echoCancellation: true,
-                            noiseSuppression: true,
-                            autoGainControl: true,
-                            channelCount: 1
-                        },
-                        video: false
-                    });
-                    
-                    console.log('✅ Microphone access granted');
-                    
-                    // Start muted
-                    this.localStream.getAudioTracks()[0].enabled = false;
-                    this.isMuted = true;
-                    
-                    this.updateDebugInfo();
-                    
-                } catch (error) {
-                    console.error('❌ Microphone access denied:', error);
-                    throw new Error('Microphone access required for voice chat');
-                }
-            }
-            
-            setupControls() {
-                const micBtn = document.getElementById('micBtn');
-                const speakerBtn = document.getElementById('speakerBtn');
-                const leaveBtn = document.getElementById('leaveBtn');
-                
-                // Mic Button - FIXED VERSION
-                micBtn.addEventListener('click', () => {
-                    console.log('Mic button clicked');
-                    this.toggleMicrophone();
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+        
+        // User Information
+        const myId = "User_" + Math.floor(Math.random() * 9000 + 1000);
+        let localStream = null;
+        let isMuted = true;
+        const activePeers = {};
+        const audioElements = {};
+        
+        // Clean old data from Firebase (older than 30 seconds)
+        function cleanupOldUsers() {
+            const now = Date.now();
+            database.ref('active_users').once('value').then(snapshot => {
+                const updates = {};
+                snapshot.forEach(child => {
+                    const userData = child.val();
+                    if (now - userData.lastSeen > 30000) { // 30 seconds
+                        updates[child.key] = null;
+                    }
                 });
-                
-                // Speaker Button
-                speakerBtn.addEventListener('click', () => {
-                    this.toggleSpeaker();
-                });
-                
-                // Leave Button
-                leaveBtn.addEventListener('click', () => {
-                    if (confirm('Are you sure you want to leave?')) {
-                        this.leaveChat();
+                if (Object.keys(updates).length > 0) {
+                    database.ref('active_users').update(updates);
+                }
+            });
+        }
+        
+        // Initialize Application
+        async function initApp() {
+            console.log("🚀 Initializing Guild Live Voice Chat...");
+            console.log("Your ID:", myId);
+            
+            // Update UI with my ID
+            document.getElementById('myIdDisplay').textContent = `You: ${myId}`;
+            document.getElementById('connectionStatus').innerHTML = `
+                <span class="connection-pulse"></span>
+                Connected as <strong>${myId}</strong>
+            `;
+            
+            try {
+                // Get microphone access
+                localStream = await navigator.mediaDevices.getUserMedia({
+                    audio: {
+                        echoCancellation: true,
+                        noiseSuppression: true,
+                        autoGainControl: true
                     }
                 });
                 
-                console.log('✅ Controls setup complete');
+                // Start with muted microphone
+                localStream.getAudioTracks()[0].enabled = false;
+                isMuted = true;
+                
+                console.log("✅ Microphone access granted");
+                
+                // Setup controls
+                setupControls();
+                
+                // Connect to Firebase
+                setupFirebaseConnection();
+                
+                // Cleanup old data periodically
+                setInterval(cleanupOldUsers, 10000);
+                
+            } catch (error) {
+                console.error("❌ Microphone error:", error);
+                document.getElementById('connectionStatus').innerHTML = `
+                    <span style="color: #ef4444;">
+                        <i class="fas fa-exclamation-circle"></i> 
+                        Microphone access required
+                    </span>
+                `;
+            }
+        }
+        
+        // Setup Firebase realtime connection
+        function setupFirebaseConnection() {
+            // Set my presence in Firebase
+            const userRef = database.ref('active_users/' + myId);
+            
+            // Set initial data
+            userRef.set({
+                id: myId,
+                isMuted: isMuted,
+                lastSeen: Date.now(),
+                connected: true
+            });
+            
+            // Update lastSeen every 5 seconds
+            setInterval(() => {
+                userRef.update({
+                    lastSeen: Date.now(),
+                    isMuted: isMuted
+                });
+            }, 5000);
+            
+            // Remove on disconnect
+            userRef.onDisconnect().remove();
+            
+            // Listen for other users
+            database.ref('active_users').on('value', handleUsersUpdate);
+        }
+        
+        // Handle users update from Firebase
+        function handleUsersUpdate(snapshot) {
+            const users = snapshot.val();
+            const userList = document.getElementById('userList');
+            const userCount = document.getElementById('userCount');
+            
+            if (!users || Object.keys(users).length === 0) {
+                // Only me online
+                userList.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #94a3b8; width: 100%;">
+                        <i class="fas fa-users" style="font-size: 40px; margin-bottom: 15px;"></i>
+                        <p>You're the only one here</p>
+                        <p style="font-size: 12px; margin-top: 10px;">
+                            Share your ID: <strong>${myId}</strong> with others to invite them
+                        </p>
+                    </div>
+                `;
+                userCount.textContent = "1 Online";
+                return;
             }
             
-            toggleMicrophone() {
-                if (!this.localStream || this.localStream.getAudioTracks().length === 0) {
-                    console.error('No local stream available');
-                    this.showError('Microphone not available');
+            // Filter out old users (last seen > 10 seconds)
+            const now = Date.now();
+            const activeUsers = [];
+            
+            for (const userId in users) {
+                const user = users[userId];
+                if (now - user.lastSeen < 15000) { // 15 seconds threshold
+                    activeUsers.push(user);
+                }
+            }
+            
+            // Sort: me first, then others
+            activeUsers.sort((a, b) => {
+                if (a.id === myId) return -1;
+                if (b.id === myId) return 1;
+                return b.lastSeen - a.lastSeen;
+            });
+            
+            // Update count (REAL count)
+            const realCount = activeUsers.length;
+            userCount.textContent = `${realCount} Online`;
+            
+            // Generate user list HTML
+            let html = '';
+            activeUsers.forEach(user => {
+                const isMe = user.id === myId;
+                const isSpeaking = !user.isMuted;
+                
+                html += `
+                    <div class="user-card ${isMe ? 'me' : ''}">
+                        <div class="avatar ${isSpeaking ? 'speaking' : ''}">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="user-details">
+                            <div class="user-name">
+                                ${isMe ? 'You (Me)' : user.id}
+                            </div>
+                            <div class="user-status">
+                                ${isMe ? 
+                                    (isMuted ? '🔇 Muted' : '🎤 Speaking') : 
+                                    (isSpeaking ? '🎤 Speaking' : '🔇 Muted')
+                                }
+                            </div>
+                        </div>
+                        <div class="status-dot ${isSpeaking ? 'status-speaking' : 'status-muted'}"></div>
+                    </div>
+                `;
+            });
+            
+            userList.innerHTML = html;
+            
+            // Update page title with real count
+            document.title = `Guild Live (${realCount} Online)`;
+            
+            // Establish WebRTC connections with other users
+            activeUsers.forEach(user => {
+                if (user.id !== myId && !activePeers[user.id]) {
+                    setupPeerConnection(user.id);
+                }
+            });
+            
+            // Cleanup disconnected peers
+            Object.keys(activePeers).forEach(peerId => {
+                if (!activeUsers.find(u => u.id === peerId)) {
+                    cleanupPeer(peerId);
+                }
+            });
+        }
+        
+        // Setup WebRTC peer connection
+        function setupPeerConnection(targetId) {
+            if (activePeers[targetId] || !localStream) return;
+            
+            console.log(`🔗 Setting up peer connection with ${targetId}`);
+            
+            const peer = new SimplePeer({
+                initiator: true,
+                trickle: true,
+                stream: localStream,
+                config: {
+                    iceServers: [
+                        { urls: 'stun:stun.l.google.com:19302' },
+                        { urls: 'stun:stun1.l.google.com:19302' },
+                        { urls: 'stun:stun2.l.google.com:19302' }
+                    ]
+                }
+            });
+            
+            peer.on('signal', data => {
+                // Send signal through Firebase
+                database.ref('signals/' + targetId).push({
+                    from: myId,
+                    signal: data,
+                    timestamp: Date.now()
+                });
+            });
+            
+            peer.on('stream', stream => {
+                console.log(`🎵 Received stream from ${targetId}`);
+                playRemoteStream(targetId, stream);
+            });
+            
+            peer.on('error', err => {
+                console.error(`Peer error with ${targetId}:`, err);
+                cleanupPeer(targetId);
+            });
+            
+            activePeers[targetId] = peer;
+            
+            // Listen for signals from this peer
+            database.ref('signals/' + myId).on('child_added', snapshot => {
+                const signalData = snapshot.val();
+                if (signalData.from === targetId && peer) {
+                    try {
+                        peer.signal(signalData.signal);
+                        // Remove signal after processing
+                        snapshot.ref.remove();
+                    } catch (err) {
+                        console.error('Signal error:', err);
+                    }
+                }
+            });
+        }
+        
+        // Play remote audio stream
+        function playRemoteStream(userId, stream) {
+            let audio = audioElements[userId];
+            if (!audio) {
+                audio = document.createElement('audio');
+                audio.id = 'audio-' + userId;
+                audio.autoplay = true;
+                audio.volume = 1.0;
+                audio.setAttribute('data-user', userId);
+                document.body.appendChild(audio);
+                audioElements[userId] = audio;
+            }
+            audio.srcObject = stream;
+        }
+        
+        // Cleanup peer connection
+        function cleanupPeer(userId) {
+            if (activePeers[userId]) {
+                try {
+                    activePeers[userId].destroy();
+                } catch (e) {}
+                delete activePeers[userId];
+            }
+            
+            if (audioElements[userId]) {
+                try {
+                    audioElements[userId].pause();
+                    audioElements[userId].srcObject = null;
+                    audioElements[userId].remove();
+                } catch (e) {}
+                delete audioElements[userId];
+            }
+        }
+        
+        // Setup control buttons
+        function setupControls() {
+            // Microphone Button
+            document.getElementById('micBtn').onclick = () => {
+                if (!localStream) {
+                    alert("Microphone not available. Please refresh.");
                     return;
                 }
                 
-                try {
-                    const audioTrack = this.localStream.getAudioTracks()[0];
-                    const currentState = audioTrack.enabled;
-                    const newState = !currentState;
-                    
-                    console.log('Toggling microphone:', {
-                        current: currentState ? 'Enabled' : 'Disabled',
-                        new: newState ? 'Enabled' : 'Disabled'
-                    });
-                    
-                    // Update track state
-                    audioTrack.enabled = newState;
-                    this.isMuted = !newState;
-                    
-                    // Update UI
-                    const micBtn = document.getElementById('micBtn');
-                    const micIcon = document.getElementById('micIcon');
-                    const micText = document.getElementById('micText');
-                    
-                    if (newState) {
-                        // Mic is now ON
-                        micBtn.classList.add('active');
-                        micIcon.className = 'fas fa-microphone';
-                        micText.textContent = 'Mute';
-                        console.log('🎤 Microphone UNMUTED');
-                    } else {
-                        // Mic is now OFF
-                        micBtn.classList.remove('active');
-                        micIcon.className = 'fas fa-microphone-slash';
-                        micText.textContent = 'Unmute';
-                        console.log('🔇 Microphone MUTED');
-                    }
-                    
-                    this.updateUI();
-                    this.updateDebugInfo();
-                    
-                    // Simulate broadcast to other users (in a real app, this would go through a server)
-                    this.broadcastMicState();
-                    
-                } catch (error) {
-                    console.error('Error toggling microphone:', error);
-                    this.showError('Failed to toggle microphone');
+                const audioTrack = localStream.getAudioTracks()[0];
+                isMuted = !audioTrack.enabled;
+                audioTrack.enabled = !isMuted;
+                
+                // Update UI
+                const micBtn = document.getElementById('micBtn');
+                const micIcon = document.getElementById('micIcon');
+                const micText = document.getElementById('micText');
+                
+                if (audioTrack.enabled) {
+                    micBtn.classList.add('active');
+                    micIcon.className = 'fas fa-microphone';
+                    micText.textContent = 'Mute';
+                    console.log('🎤 Microphone ON');
+                } else {
+                    micBtn.classList.remove('active');
+                    micIcon.className = 'fas fa-microphone-slash';
+                    micText.textContent = 'Unmute';
+                    console.log('🔇 Microphone OFF');
                 }
-            }
+                
+                // Update Firebase
+                database.ref('active_users/' + myId).update({
+                    isMuted: isMuted,
+                    lastSeen: Date.now()
+                });
+            };
             
-            toggleSpeaker() {
-                const speakerBtn = document.getElementById('speakerBtn');
-                const isActive = speakerBtn.classList.contains('active');
+            // Speaker Button
+            document.getElementById('speakerBtn').onclick = () => {
+                const btn = document.getElementById('speakerBtn');
+                const isActive = btn.classList.contains('active');
                 
                 if (isActive) {
-                    // Mute all speakers
-                    speakerBtn.classList.remove('active');
+                    btn.classList.remove('active');
                     document.querySelector('#speakerBtn .icon-circle i').className = 'fas fa-volume-mute';
                     
-                    Object.values(this.audioElements).forEach(audio => {
+                    // Mute all remote audio
+                    Object.values(audioElements).forEach(audio => {
                         audio.volume = 0;
                     });
                     
                     console.log('🔇 All speakers muted');
                 } else {
-                    // Unmute all speakers
-                    speakerBtn.classList.add('active');
+                    btn.classList.add('active');
                     document.querySelector('#speakerBtn .icon-circle i').className = 'fas fa-volume-up';
                     
-                    Object.values(this.audioElements).forEach(audio => {
+                    // Unmute all remote audio
+                    Object.values(audioElements).forEach(audio => {
                         audio.volume = 1.0;
                     });
                     
                     console.log('🔊 All speakers unmuted');
                 }
-            }
+            };
             
-            startPeerDiscovery() {
-                console.log('Starting peer discovery simulation...');
-                
-                // Simulate finding other users
-                setInterval(() => {
-                    this.simulateUserDiscovery();
-                }, 3000);
-                
-                // Simulate incoming connections
-                setInterval(() => {
-                    this.simulateIncomingConnections();
-                }, 5000);
-            }
-            
-            simulateUserDiscovery() {
-                // In a real app, this would be from a server
-                // For demo, we'll simulate some users
-                const simulatedUsers = [
-                    'User_' + Math.floor(Math.random() * 9000 + 1000),
-                    'User_' + Math.floor(Math.random() * 9000 + 1000)
-                ];
-                
-                simulatedUsers.forEach(userId => {
-                    if (userId !== this.myId && !this.users[userId]) {
-                        this.addUser(userId, Math.random() > 0.5);
-                        
-                        // Simulate connection
-                        setTimeout(() => {
-                            this.connectToUser(userId);
-                        }, 1000);
-                    }
-                });
-            }
-            
-            simulateIncomingConnections() {
-                // Simulate some users disconnecting
-                Object.keys(this.users).forEach(userId => {
-                    if (Math.random() > 0.8 && userId !== this.myId) {
-                        this.removeUser(userId);
-                    }
-                });
-            }
-            
-            addUser(userId, isMuted = true) {
-                if (!this.users[userId] && userId !== this.myId) {
-                    this.users[userId] = {
-                        id: userId,
-                        isMuted: isMuted,
-                        connected: false,
-                        speaking: false
-                    };
+            // Leave Button
+            document.getElementById('leaveBtn').onclick = () => {
+                if (confirm("Are you sure you want to leave the voice chat?")) {
+                    // Cleanup all connections
+                    Object.keys(activePeers).forEach(userId => {
+                        cleanupPeer(userId);
+                    });
                     
-                    this.connectedUsers.add(userId);
-                    console.log('➕ User added:', userId);
-                    this.updateUI();
-                }
-            }
-            
-            removeUser(userId) {
-                if (this.users[userId]) {
-                    // Cleanup peer
-                    if (this.peers[userId]) {
-                        this.peers[userId].destroy();
-                        delete this.peers[userId];
+                    // Remove from Firebase
+                    database.ref('active_users/' + myId).remove();
+                    database.ref('signals/' + myId).remove();
+                    
+                    // Stop local stream
+                    if (localStream) {
+                        localStream.getTracks().forEach(track => track.stop());
                     }
                     
-                    // Cleanup audio
-                    if (this.audioElements[userId]) {
-                        this.audioElements[userId].pause();
-                        this.audioElements[userId].srcObject = null;
-                        this.audioElements[userId].remove();
-                        delete this.audioElements[userId];
-                    }
-                    
-                    // Remove from users
-                    delete this.users[userId];
-                    this.connectedUsers.delete(userId);
-                    
-                    console.log('➖ User removed:', userId);
-                    this.updateUI();
+                    // Redirect
+                    setTimeout(() => location.reload(), 500);
                 }
-            }
-            
-            async connectToUser(userId) {
-                if (this.peers[userId] || userId === this.myId || !this.localStream) {
-                    return;
-                }
-                
-                console.log('🔗 Connecting to:', userId);
-                
-                try {
-                    const peer = new SimplePeer({
-                        initiator: true,
-                        trickle: true,
-                        stream: this.localStream,
-                        config: {
-                            iceServers: [
-                                { urls: 'stun:stun.l.google.com:19302' },
-                                { urls: 'stun:stun1.l.google.com:19302' },
-                                { urls: 'stun:stun2.l.google.com:19302' }
-                            ]
-                        }
-                    });
-                    
-                    peer.on('signal', (signal) => {
-                        console.log('📡 Signal generated for:', userId);
-                        // In a real app, send this to signaling server
-                    });
-                    
-                    peer.on('stream', (stream) => {
-                        console.log('🎵 Stream received from:', userId);
-                        this.handleRemoteStream(userId, stream);
-                    });
-                    
-                    peer.on('connect', () => {
-                        console.log('✅ Connected to:', userId);
-                        if (this.users[userId]) {
-                            this.users[userId].connected = true;
-                            this.updateUI();
-                        }
-                    });
-                    
-                    peer.on('error', (err) => {
-                        console.error('❌ Peer error:', err);
-                        this.removeUser(userId);
-                    });
-                    
-                    peer.on('close', () => {
-                        console.log('🔒 Connection closed with:', userId);
-                        this.removeUser(userId);
-                    });
-                    
-                    this.peers[userId] = peer;
-                    
-                } catch (error) {
-                    console.error('Connection error:', error);
-                }
-            }
-            
-            handleRemoteStream(userId, stream) {
-                console.log('🎧 Playing stream from:', userId);
-                
-                let audio = this.audioElements[userId];
-                if (!audio) {
-                    audio = document.createElement('audio');
-                    audio.id = 'audio-' + userId;
-                    audio.autoplay = true;
-                    audio.volume = document.getElementById('speakerBtn').classList.contains('active') ? 1.0 : 0;
-                    audio.setAttribute('data-user', userId);
-                    document.body.appendChild(audio);
-                    this.audioElements[userId] = audio;
-                }
-                
-                audio.srcObject = stream;
-                
-                // Update user status
-                if (this.users[userId]) {
-                    this.users[userId].connected = true;
-                    this.users[userId].speaking = true;
-                    this.updateUI();
-                }
-                
-                this.updateDebugInfo();
-            }
-            
-            broadcastMicState() {
-                // In a real app, broadcast to other users through server
-                console.log('Broadcasting mic state:', this.isMuted ? 'MUTED' : 'UNMUTED');
-                
-                // Update all connected users
-                Object.keys(this.users).forEach(userId => {
-                    if (this.users[userId]) {
-                        this.users[userId].speaking = !this.isMuted;
-                    }
-                });
-                
-                this.updateUI();
-            }
-            
-            updateUI() {
-                const userList = document.getElementById('userList');
-                const userCount = document.getElementById('userCount');
-                
-                // Always include myself
-                const allUsers = {
-                    [this.myId]: {
-                        id: this.myId,
-                        isMuted: this.isMuted,
-                        connected: true,
-                        speaking: !this.isMuted
-                    },
-                    ...this.users
-                };
-                
-                const usersArray = Object.values(allUsers);
-                const onlineCount = usersArray.length;
-                
-                userCount.textContent = `${onlineCount} Online`;
-                
-                if (usersArray.length === 1 && usersArray[0].id === this.myId) {
-                    userList.innerHTML = `
-                        <div style="text-align: center; padding: 40px; color: #94a3b8;">
-                            <i class="fas fa-users" style="font-size: 40px; margin-bottom: 15px;"></i>
-                            <p>Waiting for other users to join...</p>
-                            <p style="font-size: 12px; margin-top: 10px;">Your ID: ${this.myId}</p>
-                        </div>
-                    `;
-                    return;
-                }
-                
-                let html = '';
-                usersArray.forEach(user => {
-                    const isMe = user.id === this.myId;
-                    const isSpeaking = user.speaking && user.connected;
-                    
-                    html += `
-                        <div class="user-card">
-                            <div class="avatar ${isSpeaking ? 'voice-active' : ''}">
-                                <i class="fas fa-user"></i>
-                            </div>
-                            <div class="user-info">
-                                <div class="user-name">
-                                    ${isMe ? 'You (Me)' : user.id}
-                                </div>
-                                <div class="user-status">
-                                    ${isMe ? (this.isMuted ? 'Muted' : 'Speaking') : 
-                                      (user.connected ? (isSpeaking ? 'Speaking' : 'Muted') : 'Connecting...')}
-                                </div>
-                            </div>
-                            <div class="status-dot ${isSpeaking ? 'status-speaking' : 
-                                (isMe ? (this.isMuted ? 'status-muted' : 'status-speaking') : 
-                                (user.connected ? 'status-online' : 'status-muted'))}"></div>
-                        </div>
-                    `;
-                });
-                
-                userList.innerHTML = html;
-            }
-            
-            updateStatus(message, type = 'info') {
-                const statusEl = document.getElementById('connectionStatus');
-                statusEl.textContent = message;
-                
-                if (type === 'error') {
-                    statusEl.style.color = '#ef4444';
-                } else if (type === 'success') {
-                    statusEl.style.color = '#10b981';
-                } else {
-                    statusEl.style.color = '#3b82f6';
-                }
-            }
-            
-            updateDebugInfo() {
-                if (!DEBUG) return;
-                
-                document.getElementById('debugStream').textContent = this.localStream ? 'Yes' : 'No';
-                document.getElementById('debugMic').textContent = this.localStream && 
-                    this.localStream.getAudioTracks()[0]?.enabled ? 'Yes' : 'No';
-                document.getElementById('debugPeers').textContent = Object.keys(this.peers).length;
-                document.getElementById('debugAudio').textContent = Object.keys(this.audioElements).length;
-            }
-            
-            showError(message) {
-                alert(message);
-            }
-            
-            leaveChat() {
-                console.log('Leaving chat...');
-                
-                // Cleanup all connections
-                Object.keys(this.peers).forEach(userId => {
-                    this.removeUser(userId);
-                });
-                
-                // Stop local stream
-                if (this.localStream) {
-                    this.localStream.getTracks().forEach(track => track.stop());
-                }
-                
-                this.updateStatus('Disconnected');
-                
-                // Reload page after a delay
-                setTimeout(() => {
-                    location.reload();
-                }, 1000);
-            }
+            };
         }
         
-        function toggleDebug() {
-            const debugInfo = document.getElementById('debugInfo');
-            debugInfo.style.display = debugInfo.style.display === 'block' ? 'none' : 'block';
-        }
+        // Initialize on page load
+        window.addEventListener('load', initApp);
         
-        // Start voice chat when page loads
-        window.addEventListener('load', () => {
-            console.log('🚀 Starting Guild Live Voice Chat...');
-            window.voiceChat = new SimpleVoiceChat();
-        });
-        
-        // Prevent accidental page leave
-        window.addEventListener('beforeunload', (e) => {
-            if (window.voiceChat && Object.keys(window.voiceChat.peers).length > 0) {
-                e.preventDefault();
-                e.returnValue = 'Are you sure you want to leave the voice chat?';
-            }
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            database.ref('active_users/' + myId).remove();
+            database.ref('signals/' + myId).remove();
         });
     </script>
 </body>
