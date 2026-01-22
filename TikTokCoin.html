@@ -3,18 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TikTok Coins</title>
+    <title>TikTok Coins - বাংলাদেশ</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', Arial, sans-serif;
+            font-family: 'Segoe UI', 'Noto Sans Bengali', sans-serif;
         }
         
         body {
-            background: #f8f9fa;
+            background: linear-gradient(135deg, #000000, #25F4EE, #FE2C55);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
@@ -22,212 +22,127 @@
             padding: 20px;
         }
         
-        .main-header {
-            text-align: center;
-            margin-bottom: 30px;
-            color: #000000;
+        .container {
+            max-width: 1200px;
             width: 100%;
-            max-width: 400px;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            margin-top: 20px;
         }
         
-        .main-header h1 {
-            font-size: 28px;
-            margin-bottom: 8px;
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #eee;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            color: #000;
+            margin-bottom: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            gap: 15px;
         }
         
-        .main-header h1 i {
-            font-size: 32px;
+        .header h1 i {
+            color: #000;
+            font-size: 2.8rem;
         }
         
-        .main-subtitle {
-            font-size: 16px;
+        .header p {
             color: #666;
-            line-height: 1.4;
+            font-size: 1.1rem;
+            line-height: 1.6;
         }
         
-        .coins-container {
-            width: 100%;
-            max-width: 1200px;
+        .coins-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
             gap: 20px;
+            margin-bottom: 40px;
         }
         
-        .coin-card {
+        .coin-option {
             background: white;
             border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
+            padding: 20px;
+            border: 2px solid #e0e0e0;
+            cursor: pointer;
+            transition: all 0.3s ease;
             display: flex;
             flex-direction: column;
-            border: 2px solid transparent;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            position: relative;
-        }
-        
-        .coin-card.selected {
-            border-color: #FE2C55;
-            box-shadow: 0 6px 20px rgba(254, 44, 85, 0.2);
-            transform: translateY(-5px);
-        }
-        
-        .coin-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
-        }
-        
-        .plan-header {
-            background: linear-gradient(to right, #000000, #25F4EE, #FE2C55);
-            color: white;
-            padding: 25px 20px;
+            align-items: center;
             text-align: center;
             position: relative;
-            overflow: hidden;
         }
         
-        .plan-title {
-            font-size: 20px;
-            font-weight: 600;
-            background: rgba(0, 0, 0, 0.7);
-            padding: 8px 16px;
-            border-radius: 20px;
-            display: inline-block;
+        .coin-option:hover {
+            transform: translateY(-5px);
+            border-color: #FE2C55;
+            box-shadow: 0 10px 20px rgba(254, 44, 85, 0.2);
         }
         
-        .coin-amount {
-            font-size: 32px;
-            font-weight: 700;
-            margin-top: 10px;
-            color: white;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        .coin-option.selected {
+            border-color: #FE2C55;
+            background: linear-gradient(135deg, rgba(254, 44, 85, 0.1), rgba(37, 244, 238, 0.1));
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(254, 44, 85, 0.3);
         }
         
         .coin-icon {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            font-size: 24px;
+            font-size: 2.5rem;
+            margin-bottom: 15px;
             color: #FFD700;
-            background: rgba(0, 0, 0, 0.5);
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
         }
         
-        .plan-content {
-            padding: 20px;
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .price-section {
-            background: #f8f9fa;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-        
-        .price-label {
-            font-size: 14px;
-            color: #666;
+        .coin-amount {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #000;
             margin-bottom: 5px;
         }
         
-        .price {
-            display: flex;
-            align-items: baseline;
-            justify-content: center;
-            gap: 5px;
-        }
-        
-        .currency {
-            font-size: 14px;
-            color: #333;
-            font-weight: 500;
-        }
-        
-        .amount {
-            font-size: 28px;
-            font-weight: 700;
+        .coin-price {
+            font-size: 1.5rem;
+            font-weight: 600;
             color: #FE2C55;
-        }
-        
-        .bonus-info {
-            background: #e8f5e9;
-            border: 1px solid #4CAF50;
-            border-radius: 6px;
-            padding: 8px 12px;
-            text-align: center;
-            font-size: 14px;
-            color: #2e7d32;
-            font-weight: 500;
             margin-bottom: 15px;
         }
         
-        .features {
-            margin-bottom: 20px;
-        }
-        
-        .feature-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
+        .per-coin {
+            font-size: 0.9rem;
+            color: #666;
+            background: #f8f9fa;
+            padding: 4px 10px;
+            border-radius: 12px;
             margin-bottom: 10px;
-            font-size: 14px;
-            color: #444;
         }
         
-        .feature-item i {
-            color: #25F4EE;
-            font-size: 16px;
-        }
-        
-        .buy-now-btn {
-            width: 100%;
+        .select-btn {
             background: linear-gradient(to right, #000000, #FE2C55);
             color: white;
             border: none;
+            padding: 10px 20px;
             border-radius: 8px;
-            padding: 14px;
-            font-size: 16px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            text-decoration: none;
-            text-align: center;
-            margin-top: auto;
+            margin-top: 10px;
+            width: 100%;
+            max-width: 150px;
         }
         
-        .buy-now-btn:hover {
+        .select-btn:hover {
             background: linear-gradient(to right, #FE2C55, #000000);
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(254, 44, 85, 0.3);
+            transform: scale(1.05);
         }
         
-        .plan-footer {
-            padding: 15px 20px;
-            text-align: center;
-            border-top: 1px solid #eee;
-            font-size: 12px;
-            color: #666;
-            line-height: 1.4;
-        }
-        
-        .selected-indicator {
+        .selected-badge {
             position: absolute;
             top: -10px;
             right: -10px;
@@ -239,308 +154,393 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 16px;
+            font-size: 1.2rem;
+            display: none;
         }
         
-        /* Responsive Design */
-        @media (max-width: 992px) {
-            .coins-container {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            
-            .coins-container .coin-card:last-child {
-                grid-column: span 2;
-                max-width: 400px;
-                margin: 0 auto;
-            }
+        .selected .selected-badge {
+            display: flex;
+        }
+        
+        .checkout-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 30px;
+            border: 2px solid #FE2C55;
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .checkout-header {
+            font-size: 1.8rem;
+            color: #000;
+            margin-bottom: 20px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .checkout-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .detail-box {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #25F4EE;
+        }
+        
+        .detail-label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .detail-value {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #000;
+        }
+        
+        .payment-options {
+            margin: 25px 0;
+        }
+        
+        .payment-title {
+            font-size: 1.3rem;
+            color: #000;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .payment-icons {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .payment-icon {
+            font-size: 2rem;
+            color: #000;
+            background: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        
+        .pay-btn {
+            background: linear-gradient(to right, #25D366, #128C7E);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: block;
+            width: 100%;
+            max-width: 300px;
+            margin: 0 auto;
+        }
+        
+        .pay-btn:hover {
+            background: linear-gradient(to right, #128C7E, #0A6E5C);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(37, 211, 102, 0.3);
+        }
+        
+        .footer-note {
+            text-align: center;
+            margin-top: 30px;
+            color: #666;
+            font-size: 0.9rem;
+            line-height: 1.5;
         }
         
         @media (max-width: 768px) {
-            .coins-container {
+            .container {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .coins-grid {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            }
+            
+            .coin-amount {
+                font-size: 1.5rem;
+            }
+            
+            .coin-price {
+                font-size: 1.3rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .coins-grid {
                 grid-template-columns: 1fr;
-                max-width: 400px;
             }
             
-            .coins-container .coin-card:last-child {
-                grid-column: span 1;
+            .header h1 {
+                font-size: 1.8rem;
             }
             
-            .main-header h1 {
-                font-size: 24px;
-            }
-            
-            .main-subtitle {
-                font-size: 14px;
+            .checkout-details {
+                grid-template-columns: 1fr;
             }
         }
     </style>
 </head>
 <body>
-    <div class="main-header">
-        <h1><i class="fab fa-tiktok"></i> TikTok Coins</h1>
-        <p class="main-subtitle">আপনার প্রিয় ক্রিয়েটরদের সমর্থন করুন এবং বিশেষ গিফটস পাঠান</p>
-    </div>
-    
-    <div class="coins-container">
-        <!-- Small Coins Pack -->
-        <div class="coin-card" data-coin-amount="100" data-price="119">
-            <div class="plan-header">
-                <div class="coin-icon">🪙</div>
-                <div class="plan-title">Small Pack</div>
-                <div class="coin-amount">100 Coins</div>
-            </div>
-            
-            <div class="plan-content">
-                <div class="price-section">
-                    <div class="price-label">Total Price</div>
-                    <div class="price">
-                        <span class="currency">BDT</span>
-                        <span class="amount">119.00</span>
-                    </div>
-                </div>
-                
-                <div class="bonus-info">
-                    Most Popular Choice
-                </div>
-                
-                <div class="features">
-                    <div class="feature-item">
-                        <i class="fas fa-check-circle"></i>
-                        <span>১০০ TikTok Coins</span>
-                    </div>
-                    <div class="feature-item">
-                        <i class="fas fa-check-circle"></i>
-                        <span>সাধারণ গিফটস পাঠান</span>
-                    </div>
-                    <div class="feature-item">
-                        <i class="fas fa-check-circle"></i>
-                        <span>ক্রিয়েটরদের সমর্থন করুন</span>
-                    </div>
-                    <div class="feature-item">
-                        <i class="fas fa-check-circle"></i>
-                        <span>ইমিডিয়েট ডেলিভারি</span>
-                    </div>
-                </div>
-                
-                <button class="buy-now-btn select-coin-btn">
-                    <i class="fab fa-tiktok"></i>
-                    Select This Pack
-                </button>
-            </div>
-            
-            <div class="plan-footer">
-                নিরাপদ পেমেন্ট • ২৪/৭ সাপোর্ট
-            </div>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fab fa-tiktok"></i> TikTok Coins কিনুন</h1>
+            <p>আপনার প্রিয় ক্রিয়েটরদের সমর্থন করুন, বিশেষ গিফটস পাঠান এবং লাইভ স্ট্রিমিং এক্সপেরিয়েন্স এনহ্যান্স করুন। নিরাপদ পেমেন্ট, তাৎক্ষণিক ডেলিভারি!</p>
         </div>
         
-        <!-- Medium Coins Pack -->
-        <div class="coin-card" data-coin-amount="500" data-price="549">
-            <div class="plan-header">
-                <div class="coin-icon">🪙</div>
-                <div class="plan-title">Medium Pack</div>
-                <div class="coin-amount">500 Coins</div>
-            </div>
-            
-            <div class="plan-content">
-                <div class="price-section">
-                    <div class="price-label">Total Price</div>
-                    <div class="price">
-                        <span class="currency">BDT</span>
-                        <span class="amount">549.00</span>
-                    </div>
-                </div>
-                
-                <div class="bonus-info">
-                    ⭐ BEST VALUE ⭐
-                </div>
-                
-                <div class="features">
-                    <div class="feature-item">
-                        <i class="fas fa-check-circle"></i>
-                        <span>৫০০ TikTok Coins</span>
-                    </div>
-                    <div class="feature-item">
-                        <i class="fas fa-check-circle"></i>
-                        <span>স্পেশাল গিফটস আনলক করুন</span>
-                    </div>
-                    <div class="feature-item">
-                        <i class="fas fa-check-circle"></i>
-                        <span>ক্রিয়েটর ব্যাজ পান</span>
-                    </div>
-                    <div class="feature-item">
-                        <i class="fas fa-check-circle"></i>
-                        <span>লাইভ স্ট্রিমে বিশেষ উপস্থিতি</span>
-                    </div>
-                </div>
-                
-                <button class="buy-now-btn select-coin-btn">
-                    <i class="fab fa-tiktok"></i>
-                    Select This Pack
-                </button>
-            </div>
-            
-            <div class="plan-footer">
-                সর্বোচ্চ ৫% এক্সট্রা কয়েন • ২৪/৭ সাপোর্ট
-            </div>
+        <div class="coins-grid" id="coinsGrid">
+            <!-- Coin options will be generated by JavaScript -->
         </div>
         
-        <!-- Large Coins Pack -->
-        <div class="coin-card" data-coin-amount="1000" data-price="999">
-            <div class="plan-header">
-                <div class="coin-icon">🪙</div>
-                <div class="plan-title">Large Pack</div>
-                <div class="coin-amount">1000 Coins</div>
+        <div class="checkout-section" id="checkoutSection">
+            <div class="checkout-header">
+                <i class="fas fa-shopping-cart"></i> আপনার অর্ডার সম্পূর্ণ করুন
             </div>
             
-            <div class="plan-content">
-                <div class="price-section">
-                    <div class="price-label">Total Price</div>
-                    <div class="price">
-                        <span class="currency">BDT</span>
-                        <span class="amount">999.00</span>
-                    </div>
+            <div class="checkout-details">
+                <div class="detail-box">
+                    <div class="detail-label">সিলেক্টেড কয়েনস</div>
+                    <div class="detail-value" id="selectedCoins">0 Coins</div>
                 </div>
                 
-                <div class="bonus-info">
-                    💎 PREMIUM PACK 💎
+                <div class="detail-box">
+                    <div class="detail-label">মোট মূল্য</div>
+                    <div class="detail-value" id="selectedPrice">৳ 0</div>
                 </div>
                 
-                <div class="features">
-                    <div class="feature-item">
-                        <i class="fas fa-check-circle"></i>
-                        <span>১০০০ TikTok Coins</span>
-                    </div>
-                    <div class="feature-item">
-                        <i class="fas fa-check-circle"></i>
-                        <span>সব গিফটস আনলক করুন</span>
-                    </div>
-                    <div class="feature-item">
-                        <i class="fas fa-check-circle"></i>
-                        <span>VIP ক্রিয়েটর স্ট্যাটাস</span>
-                    </div>
-                    <div class="feature-item">
-                        <i class="fas fa-check-circle"></i>
-                        <span>প্রাইভেট লাইভ এক্সেস</span>
-                    </div>
-                    <div class="feature-item">
-                        <i class="fas fa-check-circle"></i>
-                        <span>কাস্টম অ্যানিমেশন</span>
-                    </div>
+                <div class="detail-box">
+                    <div class="detail-label">প্রতি কয়েনের দাম</div>
+                    <div class="detail-value" id="pricePerCoin">৳ 0</div>
                 </div>
                 
-                <button class="buy-now-btn select-coin-btn">
-                    <i class="fab fa-tiktok"></i>
-                    Select This Pack
-                </button>
+                <div class="detail-box">
+                    <div class="detail-label">ডেলিভারি</div>
+                    <div class="detail-value" style="color: #25D366;">তাৎক্ষণিক</div>
+                </div>
             </div>
             
-            <div class="plan-footer">
-                সর্বোচ্চ ১০% এক্সট্রা কয়েন • প্রিমিয়াম সাপোর্ট
+            <div class="payment-options">
+                <div class="payment-title">পেমেন্ট অপশন সিলেক্ট করুন</div>
+                <div class="payment-icons">
+                    <div class="payment-icon"><i class="fas fa-mobile-alt"></i></div>
+                    <div class="payment-icon"><i class="fas fa-credit-card"></i></div>
+                    <div class="payment-icon"><i class="fab fa-cc-visa"></i></div>
+                    <div class="payment-icon"><i class="fab fa-cc-mastercard"></i></div>
+                    <div class="payment-icon"><i class="fas fa-university"></i></div>
+                </div>
             </div>
-        </div>
-    </div>
-
-    <div class="purchase-summary" style="margin-top: 30px; max-width: 400px; width: 100%; display: none;">
-        <div style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-            <h3 style="color: #FE2C55; margin-bottom: 15px; text-align: center;">Purchase Summary</h3>
-            <div id="selected-coins" style="font-size: 18px; margin-bottom: 10px;">Selected Coins: 0</div>
-            <div id="selected-price" style="font-size: 18px; margin-bottom: 15px;">Total Price: BDT 0.00</div>
-            <a href="https://example.com/checkout" target="_blank" id="final-buy-btn" style="width: 100%; background: linear-gradient(to right, #000000, #FE2C55); color: white; border: none; border-radius: 8px; padding: 14px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; text-align: center;">
-                <i class="fab fa-tiktok"></i>
-                Buy Now - BDT 0.00
-            </a>
-            <p style="font-size: 12px; color: #666; text-align: center; margin-top: 15px;">
-                নিরাপদ পেমেন্ট • তাৎক্ষণিক ডেলিভারি
+            
+            <button class="pay-btn" id="payNowBtn">
+                <i class="fas fa-lock"></i> নিরাপদে পেমেন্ট করুন
+            </button>
+            
+            <p class="footer-note">
+                * অর্ডার নিশ্চিত হওয়ার পর ৫ মিনিটের মধ্যে কয়েনস আপনার অ্যাকাউন্টে ক্রেডিট হয়ে যাবে।<br>
+                * ২৪/৭ কাস্টমার সাপোর্ট উপলব্ধ। যে কোন সমস্যায় কল করুন: 09678-123456
             </p>
         </div>
     </div>
 
     <script>
-        let selectedCoinCard = null;
+        // Coin data with amounts and prices
+        const coinOptions = [
+            { coins: 70, price: 150 },
+            { coins: 140, price: 280 },
+            { coins: 210, price: 420 },
+            { coins: 280, price: 560 },
+            { coins: 350, price: 700 },
+            { coins: 490, price: 980 },
+            { coins: 560, price: 1120 },
+            { coins: 630, price: 1260 },
+            { coins: 700, price: 1400 },
+            { coins: 840, price: 1680 },
+            { coins: 910, price: 1820 },
+            { coins: 1050, price: 2100 },
+            { coins: 1400, price: 2800 },
+            { coins: 2100, price: 4200 }
+        ];
         
-        // Add click event to all coin cards
-        document.querySelectorAll('.coin-card').forEach(card => {
-            card.addEventListener('click', function(e) {
-                if (!e.target.classList.contains('select-coin-btn')) {
-                    // Select this coin pack
-                    selectCoinCard(this);
-                }
-            });
-            
-            // Add click event to select buttons
-            const selectBtn = this.querySelector('.select-coin-btn');
-            if (selectBtn) {
-                selectBtn.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    selectCoinCard(card);
-                });
-            }
-        });
+        // Initialize variables
+        let selectedOption = null;
         
-        function selectCoinCard(card) {
-            // Remove selected class from all cards
-            document.querySelectorAll('.coin-card').forEach(c => {
-                c.classList.remove('selected');
+        // Generate coin options
+        function generateCoinOptions() {
+            const coinsGrid = document.getElementById('coinsGrid');
+            
+            coinOptions.forEach((option, index) => {
+                const pricePerCoin = (option.price / option.coins).toFixed(2);
+                
+                const coinOption = document.createElement('div');
+                coinOption.className = 'coin-option';
+                coinOption.dataset.index = index;
+                
+                coinOption.innerHTML = `
+                    <div class="selected-badge">✓</div>
+                    <div class="coin-icon">🪙</div>
+                    <div class="coin-amount">${option.coins} Coins</div>
+                    <div class="coin-price">৳ ${option.price.toLocaleString()}</div>
+                    <div class="per-coin">প্রতি কয়েন: ৳ ${pricePerCoin}</div>
+                    <button class="select-btn" onclick="selectCoinOption(${index})">সিলেক্ট করুন</button>
+                `;
+                
+                coinsGrid.appendChild(coinOption);
             });
-            
-            // Add selected class to clicked card
-            card.classList.add('selected');
-            selectedCoinCard = card;
-            
-            // Show purchase summary
-            const purchaseSummary = document.querySelector('.purchase-summary');
-            purchaseSummary.style.display = 'block';
-            
-            // Update summary information
-            const coinAmount = card.getAttribute('data-coin-amount');
-            const price = card.getAttribute('data-price');
-            
-            document.getElementById('selected-coins').textContent = `Selected Coins: ${coinAmount}`;
-            document.getElementById('selected-price').textContent = `Total Price: BDT ${price}.00`;
-            
-            // Update buy button
-            const buyBtn = document.getElementById('final-buy-btn');
-            buyBtn.innerHTML = `<i class="fab fa-tiktok"></i> Buy Now - BDT ${price}.00`;
-            buyBtn.href = `https://example.com/checkout?coins=${coinAmount}&price=${price}`;
-            
-            // Scroll to summary
-            purchaseSummary.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
         
-        // Add hover effect to plan cards
-        document.querySelectorAll('.coin-card').forEach(card => {
-            card.addEventListener('mouseenter', function() {
-                if (!this.classList.contains('selected')) {
-                    this.style.transform = 'translateY(-5px)';
-                    this.style.transition = 'transform 0.3s ease';
-                }
+        // Select coin option
+        function selectCoinOption(index) {
+            // Remove selected class from all options
+            document.querySelectorAll('.coin-option').forEach(option => {
+                option.classList.remove('selected');
             });
             
-            card.addEventListener('mouseleave', function() {
-                if (!this.classList.contains('selected')) {
-                    this.style.transform = 'translateY(0)';
-                }
+            // Add selected class to clicked option
+            const selectedElement = document.querySelector(`.coin-option[data-index="${index}"]`);
+            selectedElement.classList.add('selected');
+            
+            // Update selected option
+            selectedOption = coinOptions[index];
+            
+            // Update checkout section
+            updateCheckoutSection();
+            
+            // Show checkout section
+            document.getElementById('checkoutSection').style.display = 'block';
+            
+            // Scroll to checkout section
+            document.getElementById('checkoutSection').scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'start' 
             });
+        }
+        
+        // Update checkout section
+        function updateCheckoutSection() {
+            if (!selectedOption) return;
+            
+            const pricePerCoin = (selectedOption.price / selectedOption.coins).toFixed(2);
+            
+            document.getElementById('selectedCoins').textContent = `${selectedOption.coins} Coins`;
+            document.getElementById('selectedPrice').textContent = `৳ ${selectedOption.price.toLocaleString()}`;
+            document.getElementById('pricePerCoin').textContent = `৳ ${pricePerCoin}`;
+            
+            // Update payment button
+            document.getElementById('payNowBtn').innerHTML = 
+                `<i class="fas fa-lock"></i> নিরাপদে পেমেন্ট করুন - ৳ ${selectedOption.price.toLocaleString()}`;
+        }
+        
+        // Payment button click handler
+        document.getElementById('payNowBtn').addEventListener('click', function() {
+            if (!selectedOption) {
+                alert('দয়া করে কয়েনস প্যাক সিলেক্ট করুন');
+                return;
+            }
+            
+            // Show payment processing
+            this.innerHTML = `<i class="fas fa-spinner fa-spin"></i> পেমেন্ট প্রসেস হচ্ছে...`;
+            this.disabled = true;
+            
+            // Simulate payment processing
+            setTimeout(() => {
+                alert(`সফল! ${selectedOption.coins} TikTok Coins অর্ডার করা হয়েছে। ৳ ${selectedOption.price} পেমেন্ট সফলভাবে সম্পন্ন হয়েছে। কয়েনস আপনার অ্যাকাউন্টে যুক্ত করা হচ্ছে...`);
+                
+                // Reset button
+                this.innerHTML = `<i class="fas fa-lock"></i> নিরাপদে পেমেন্ট করুন - ৳ ${selectedOption.price.toLocaleString()}`;
+                this.disabled = false;
+                
+                // Show success message
+                const successMsg = document.createElement('div');
+                successMsg.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: linear-gradient(to right, #25D366, #128C7E);
+                    color: white;
+                    padding: 15px 25px;
+                    border-radius: 10px;
+                    z-index: 1000;
+                    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+                    animation: slideIn 0.5s ease;
+                `;
+                successMsg.innerHTML = `
+                    <i class="fas fa-check-circle"></i> 
+                    <strong>অর্ডার সফল!</strong> ${selectedOption.coins} কয়েনস আপনার অ্যাকাউন্টে যুক্ত হবে ৫ মিনিটের মধ্যে।
+                `;
+                document.body.appendChild(successMsg);
+                
+                // Remove success message after 5 seconds
+                setTimeout(() => {
+                    successMsg.remove();
+                }, 5000);
+                
+            }, 2000);
         });
         
-        // Page load animation
-        document.addEventListener('DOMContentLoaded', function() {
-            const cards = document.querySelectorAll('.coin-card');
-            cards.forEach((card, index) => {
-                card.style.opacity = '0';
-                card.style.transform = 'translateY(20px)';
-                card.style.transition = 'opacity 0.5s, transform 0.5s';
-                
-                setTimeout(() => {
-                    card.style.opacity = '1';
-                    card.style.transform = 'translateY(0)';
-                }, 200 + (index * 200));
+        // Add animation for new elements
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            
+            .coin-option {
+                animation: fadeInUp 0.5s ease forwards;
+                opacity: 0;
+            }
+            
+            @keyframes fadeInUp {
+                to { opacity: 1; transform: translateY(0); }
+                from { opacity: 0; transform: translateY(20px); }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // Initialize page
+        window.addEventListener('DOMContentLoaded', function() {
+            generateCoinOptions();
+            
+            // Add delay to each coin option animation
+            document.querySelectorAll('.coin-option').forEach((option, index) => {
+                option.style.animationDelay = `${index * 0.05}s`;
             });
             
-            // Select first card by default
+            // Select first option by default
             setTimeout(() => {
-                selectCoinCard(cards[0]);
-            }, 1000);
+                selectCoinOption(0);
+            }, 500);
         });
     </script>
 </body>
