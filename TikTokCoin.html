@@ -178,6 +178,16 @@
             margin-bottom: 10px;
         }
         
+        .purchase-message {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 10px;
+            padding: 8px;
+            background: #e8f5e9;
+            border-radius: 6px;
+            border: 1px solid #4CAF50;
+        }
+        
         .buy-btn {
             background: linear-gradient(to right, #25D366, #128C7E);
             color: white;
@@ -191,7 +201,9 @@
             display: block;
             width: 100%;
             max-width: 250px;
-            margin: 0 auto;
+            margin: 0 auto 15px auto;
+            text-decoration: none;
+            text-align: center;
         }
         
         .buy-btn:hover {
@@ -292,10 +304,14 @@
             <div class="selection-info">
                 <div class="selected-coins" id="selectedCoins">0 Coins</div>
                 <div class="selected-price" id="selectedPrice">৳ 0</div>
-                <div id="linkInfo" style="font-size: 0.9rem; color: #666; margin-top: 5px;">
-                    লিঙ্কে প্রবেশ করবে: <span id="linkCoins">0</span> Coins, <span id="linkPrice">৳ 0</span>
+                <div class="purchase-message" id="purchaseMessage">
+                    দ্রুত কয়েন কিনে নাও: <span id="linkCoins">0</span> Coins, <span id="linkPrice">৳ 0</span>
                 </div>
             </div>
+            
+            <a href="#" id="buyLink" target="_blank" class="buy-btn">
+                <i class="fas fa-bolt"></i> Buy Now
+            </a>
             
             <div class="payment-options">
                 <div class="payment-title">পেমেন্ট অপশন</div>
@@ -306,10 +322,6 @@
                     <div class="payment-icon" title="MasterCard"><i class="fab fa-cc-mastercard"></i></div>
                 </div>
             </div>
-            
-            <button class="buy-btn" id="buyNowBtn">
-                <i class="fas fa-lock"></i> Buy Now
-            </button>
             
             <p class="footer-note">
                 * তাৎক্ষণিক ডেলিভারি (৫ মিনিট)<br>
@@ -336,6 +348,9 @@
             { coins: 1400, price: 2800 },
             { coins: 2100, price: 4200 }
         ];
+        
+        // Base URL for the payment page
+        const baseUrl = "https://fastertournament.github.io/Home/";
         
         // Initialize variables
         let selectedOption = null;
@@ -385,75 +400,40 @@
         function updateDisplaySection() {
             if (!selectedOption) return;
             
-            document.getElementById('selectedCoins').textContent = `${selectedOption.coins} Coins`;
-            document.getElementById('selectedPrice').textContent = `৳ ${selectedOption.price}`;
-            
-            // Update link information
-            document.getElementById('linkCoins').textContent = selectedOption.coins;
-            document.getElementById('linkPrice').textContent = `৳ ${selectedOption.price}`;
-        }
-        
-        // Buy button click handler
-        document.getElementById('buyNowBtn').addEventListener('click', function() {
-            if (!selectedOption) {
-                alert('দয়া করে কয়েনস প্যাক সিলেক্ট করুন');
-                return;
-            }
-            
-            // Create dynamic link with selected information
             const coins = selectedOption.coins;
             const price = selectedOption.price;
             
-            // Here you would normally redirect to payment page
-            // For demo, we'll show a message with the link details
-            const linkDetails = `প্রবেশের লিঙ্ক: ${coins} Coins এর জন্য ${price} টাকা`;
+            document.getElementById('selectedCoins').textContent = `${coins} Coins`;
+            document.getElementById('selectedPrice').textContent = `৳ ${price}`;
             
-            // Show processing message
-            const originalText = this.innerHTML;
-            this.innerHTML = `<i class="fas fa-spinner fa-spin"></i> প্রসেস হচ্ছে...`;
-            this.disabled = true;
+            // Update purchase message
+            document.getElementById('linkCoins').textContent = coins;
+            document.getElementById('linkPrice').textContent = `৳ ${price}`;
             
-            // Simulate processing
-            setTimeout(() => {
-                // Show success message with link details
-                const successMsg = document.createElement('div');
-                successMsg.style.cssText = `
-                    position: fixed;
-                    top: 15px;
-                    right: 15px;
-                    background: linear-gradient(to right, #25D366, #128C7E);
-                    color: white;
-                    padding: 12px 20px;
-                    border-radius: 8px;
-                    z-index: 1000;
-                    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-                    animation: slideIn 0.3s ease;
-                    font-size: 0.9rem;
-                    max-width: 300px;
-                `;
-                successMsg.innerHTML = `
-                    <i class="fas fa-check-circle"></i><br>
-                    <strong>অর্ডার সফল!</strong><br>
-                    ${coins} Coins - ৳ ${price}<br>
-                    লিঙ্কে প্রবেশ করবে: ${coins} Coins, ৳ ${price}
-                `;
-                document.body.appendChild(successMsg);
-                
-                // Reset button
-                this.innerHTML = originalText;
-                this.disabled = false;
-                
-                // Remove success message after 5 seconds
-                setTimeout(() => {
-                    successMsg.remove();
-                }, 5000);
-                
-            }, 1500);
-        });
+            // Update buy link with coin information
+            const buyLink = document.getElementById('buyLink');
+            buyLink.href = `${baseUrl}?coin=${coins}&price=${price}&coins=${coins}`;
+            buyLink.innerHTML = `<i class="fas fa-bolt"></i> Buy Now - ${coins} Coins (৳${price})`;
+        }
+        
+        // Add animation style
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+        `;
+        document.head.appendChild(style);
         
         // Initialize page
         window.addEventListener('DOMContentLoaded', function() {
             generateCoinOptions();
+            
+            // Select first option by default
+            setTimeout(() => {
+                selectCoinOption(0);
+            }, 300);
         });
     </script>
 </body>
