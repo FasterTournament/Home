@@ -3,301 +3,372 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>সোশ্যাল মিডিয়া বাটন</title>
+    <title>সোশ্যাল মিডিয়া</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', 'Noto Sans Bengali', sans-serif;
         }
         
         body {
-            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            background: linear-gradient(135deg, #0c0c0c, #1a1a2e, #16213e);
             min-height: 100vh;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
             padding: 20px;
-            color: #333;
-        }
-        
-        .container {
-            max-width: 900px;
-            width: 100%;
-            background-color: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
-            padding: 30px;
-            margin: 20px;
-        }
-        
-        header {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-        
-        h1 {
-            color: #1a2a6c;
-            font-size: 2.8rem;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
-        }
-        
-        .description {
-            font-size: 1.2rem;
-            color: #555;
-            max-width: 700px;
-            margin: 0 auto;
-            line-height: 1.6;
         }
         
         .buttons-container {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: repeat(4, 1fr);
             gap: 25px;
-            margin-top: 20px;
+            max-width: 1400px;
+            width: 100%;
+            padding: 40px;
         }
         
         .social-btn {
             display: flex;
+            flex-direction: column;
             align-items: center;
-            padding: 20px 25px;
-            border-radius: 15px;
+            justify-content: center;
+            padding: 40px 20px;
+            border-radius: 25px;
             text-decoration: none;
             color: white;
             font-weight: bold;
             font-size: 1.3rem;
-            transition: all 0.3s ease;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
             position: relative;
             overflow: hidden;
+            min-height: 180px;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .social-btn::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(rgba(255,255,255,0.1), rgba(255,255,255,0));
+            opacity: 0;
+            transition: opacity 0.4s;
         }
         
         .social-btn:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 12px 20px rgba(0, 0, 0, 0.3);
+            transform: translateY(-15px) scale(1.05);
+            box-shadow: 0 20px 35px rgba(0, 0, 0, 0.5);
+        }
+        
+        .social-btn:hover::after {
+            opacity: 1;
         }
         
         .social-btn:active {
-            transform: translateY(-2px);
+            transform: translateY(-8px) scale(1.02);
+            transition: transform 0.1s;
         }
         
         .social-btn i {
-            font-size: 2rem;
-            margin-right: 20px;
-            width: 40px;
-            text-align: center;
+            font-size: 4rem;
+            margin-bottom: 20px;
+            transition: transform 0.4s;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
+            z-index: 1;
+        }
+        
+        .social-btn:hover i {
+            transform: scale(1.3) rotate(5deg);
         }
         
         .social-btn span {
-            flex-grow: 1;
+            z-index: 1;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            letter-spacing: 1px;
+            font-size: 1.4rem;
         }
         
-        .social-btn .arrow {
-            font-size: 1.5rem;
-            opacity: 0.8;
-        }
-        
-        /* বাটনের রং এবং ব্যাকগ্রাউন্ড */
+        /* বাটনের রং */
         .youtube {
-            background: linear-gradient(to right, #FF0000, #CC0000);
+            background: linear-gradient(145deg, #FF0000, #CC0000, #8B0000);
         }
         
         .facebook {
-            background: linear-gradient(to right, #1877F2, #0A5BC4);
+            background: linear-gradient(145deg, #1877F2, #0A5BC4, #0947A0);
         }
         
         .tiktok {
-            background: linear-gradient(to right, #000000, #25F4EE, #FE2C55);
+            background: linear-gradient(145deg, #000000, #25F4EE, #FE2C55);
         }
         
         .freefire {
-            background: linear-gradient(to right, #FF8800, #FF5500);
+            background: linear-gradient(145deg, #FF8800, #FF5500, #CC4400);
         }
         
         .instagram {
-            background: linear-gradient(45deg, #405DE6, #5851DB, #833AB4, #C13584, #E1306C, #FD1D1D);
+            background: linear-gradient(145deg, #405DE6, #5851DB, #833AB4, #C13584, #E1306C, #FD1D1D);
         }
         
         .whatsapp {
-            background: linear-gradient(to right, #25D366, #128C7E);
+            background: linear-gradient(145deg, #25D366, #128C7E, #0D6E5C);
         }
         
         .twitter {
-            background: linear-gradient(to right, #1DA1F2, #0C8BD6);
+            background: linear-gradient(145deg, #1DA1F2, #0C8BD6, #0A6BA8);
         }
         
         .linkedin {
-            background: linear-gradient(to right, #0077B5, #005582);
+            background: linear-gradient(145deg, #0077B5, #005582, #003C5E);
         }
         
-        .footer {
-            margin-top: 40px;
-            text-align: center;
-            color: white;
-            font-size: 1.1rem;
-            padding: 15px;
-            border-radius: 10px;
-            background-color: rgba(0, 0, 0, 0.2);
-            width: 100%;
-            max-width: 900px;
+        .snapchat {
+            background: linear-gradient(145deg, #FFFC00, #FFD700, #CCAC00);
+            color: #000;
         }
         
-        /* রেসপনসিভ ডিজাইন */
-        @media (max-width: 768px) {
-            .container {
-                padding: 20px;
-            }
-            
-            h1 {
-                font-size: 2.2rem;
-            }
-            
-            .description {
-                font-size: 1.1rem;
-            }
-            
+        .telegram {
+            background: linear-gradient(145deg, #0088cc, #006699, #004466);
+        }
+        
+        .spotify {
+            background: linear-gradient(145deg, #1DB954, #1AA34A, #158A3D);
+        }
+        
+        .discord {
+            background: linear-gradient(145deg, #5865F2, #4752C4, #3B439F);
+        }
+        
+        /* গ্লো ইফেক্ট */
+        .social-btn::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: inherit;
+            border-radius: inherit;
+            filter: blur(15px);
+            opacity: 0.6;
+            z-index: -1;
+            transition: opacity 0.4s;
+        }
+        
+        .social-btn:hover::before {
+            opacity: 0.9;
+        }
+        
+        /* রেসপনসিভ */
+        @media (max-width: 1200px) {
             .buttons-container {
-                grid-template-columns: 1fr;
+                grid-template-columns: repeat(3, 1fr);
+                padding: 30px;
+                gap: 20px;
+            }
+        }
+        
+        @media (max-width: 900px) {
+            .buttons-container {
+                grid-template-columns: repeat(2, 1fr);
+                padding: 25px;
                 gap: 18px;
             }
             
             .social-btn {
-                padding: 18px 20px;
-                font-size: 1.2rem;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            h1 {
-                font-size: 1.8rem;
-            }
-            
-            .description {
-                font-size: 1rem;
-            }
-            
-            .social-btn {
-                padding: 16px 18px;
-                font-size: 1.1rem;
+                min-height: 160px;
+                padding: 35px 15px;
             }
             
             .social-btn i {
-                font-size: 1.8rem;
-                margin-right: 15px;
+                font-size: 3.5rem;
+            }
+        }
+        
+        @media (max-width: 600px) {
+            .buttons-container {
+                grid-template-columns: 1fr;
+                max-width: 400px;
+                padding: 20px;
+                gap: 15px;
+            }
+            
+            .social-btn {
+                flex-direction: row;
+                justify-content: flex-start;
+                padding: 25px 30px;
+                min-height: 100px;
+            }
+            
+            .social-btn i {
+                font-size: 3rem;
+                margin-bottom: 0;
+                margin-right: 25px;
+                width: 60px;
+                text-align: center;
+            }
+            
+            .social-btn span {
+                font-size: 1.5rem;
+            }
+        }
+        
+        /* এনিমেশন */
+        @keyframes floatIn {
+            0% {
+                opacity: 0;
+                transform: translateY(50px) scale(0.8);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        
+        .social-btn {
+            animation: floatIn 0.6s ease-out forwards;
+            opacity: 0;
+        }
+        
+        /* প্রতিটি বাটনের জন্য আলাদা এনিমেশন ডিলে */
+        .social-btn:nth-child(1) { animation-delay: 0.05s; }
+        .social-btn:nth-child(2) { animation-delay: 0.1s; }
+        .social-btn:nth-child(3) { animation-delay: 0.15s; }
+        .social-btn:nth-child(4) { animation-delay: 0.2s; }
+        .social-btn:nth-child(5) { animation-delay: 0.25s; }
+        .social-btn:nth-child(6) { animation-delay: 0.3s; }
+        .social-btn:nth-child(7) { animation-delay: 0.35s; }
+        .social-btn:nth-child(8) { animation-delay: 0.4s; }
+        .social-btn:nth-child(9) { animation-delay: 0.45s; }
+        .social-btn:nth-child(10) { animation-delay: 0.5s; }
+        .social-btn:nth-child(11) { animation-delay: 0.55s; }
+        .social-btn:nth-child(12) { animation-delay: 0.6s; }
+        
+        /* পেজ লোড এনিমেশন */
+        body {
+            opacity: 0;
+            animation: fadeIn 0.8s ease-out forwards;
+        }
+        
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
             }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>সোশ্যাল মিডিয়া বাটন</h1>
-            <p class="description">নিচের বাটনগুলিতে ক্লিক করে বিভিন্ন সোশ্যাল মিডিয়া ও গেমিং প্ল্যাটফর্মে ভিজিট করুন। প্রতিটি বাটনে সংশ্লিষ্ট লোগো দেখানো হয়েছে।</p>
-        </header>
+    <div class="buttons-container">
+        <a href="https://www.youtube.com" target="_blank" class="social-btn youtube">
+            <i class="fab fa-youtube"></i>
+            <span>YouTube</span>
+        </a>
         
-        <main>
-            <div class="buttons-container">
-                <a href="https://www.youtube.com" target="_blank" class="social-btn youtube">
-                    <i class="fab fa-youtube"></i>
-                    <span>YouTube</span>
-                    <div class="arrow">→</div>
-                </a>
-                
-                <a href="https://www.facebook.com" target="_blank" class="social-btn facebook">
-                    <i class="fab fa-facebook-f"></i>
-                    <span>Facebook</span>
-                    <div class="arrow">→</div>
-                </a>
-                
-                <a href="https://www.tiktok.com" target="_blank" class="social-btn tiktok">
-                    <i class="fab fa-tiktok"></i>
-                    <span>TikTok</span>
-                    <div class="arrow">→</div>
-                </a>
-                
-                <a href="https://ff.garena.com" target="_blank" class="social-btn freefire">
-                    <i class="fas fa-fire"></i>
-                    <span>Free Fire</span>
-                    <div class="arrow">→</div>
-                </a>
-                
-                <a href="https://www.instagram.com" target="_blank" class="social-btn instagram">
-                    <i class="fab fa-instagram"></i>
-                    <span>Instagram</span>
-                    <div class="arrow">→</div>
-                </a>
-                
-                <a href="https://www.whatsapp.com" target="_blank" class="social-btn whatsapp">
-                    <i class="fab fa-whatsapp"></i>
-                    <span>WhatsApp</span>
-                    <div class="arrow">→</div>
-                </a>
-                
-                <a href="https://www.twitter.com" target="_blank" class="social-btn twitter">
-                    <i class="fab fa-twitter"></i>
-                    <span>Twitter</span>
-                    <div class="arrow">→</div>
-                </a>
-                
-                <a href="https://www.linkedin.com" target="_blank" class="social-btn linkedin">
-                    <i class="fab fa-linkedin-in"></i>
-                    <span>LinkedIn</span>
-                    <div class="arrow">→</div>
-                </a>
-            </div>
-        </main>
-    </div>
-    
-    <div class="footer">
-        <p>এই ওয়েবসাইটটি শিক্ষামূলক উদ্দেশ্যে তৈরি করা হয়েছে | বাটনে ক্লিক করে সংশ্লিষ্ট ওয়েবসাইটে ভিজিট করতে পারেন</p>
-        <p>© ২০২৩ - সমস্ত অধিকার সংরক্ষিত</p>
+        <a href="https://www.facebook.com" target="_blank" class="social-btn facebook">
+            <i class="fab fa-facebook-f"></i>
+            <span>Facebook</span>
+        </a>
+        
+        <a href="https://www.tiktok.com" target="_blank" class="social-btn tiktok">
+            <i class="fab fa-tiktok"></i>
+            <span>TikTok</span>
+        </a>
+        
+        <a href="https://ff.garena.com" target="_blank" class="social-btn freefire">
+            <i class="fas fa-fire"></i>
+            <span>Free Fire</span>
+        </a>
+        
+        <a href="https://www.instagram.com" target="_blank" class="social-btn instagram">
+            <i class="fab fa-instagram"></i>
+            <span>Instagram</span>
+        </a>
+        
+        <a href="https://www.whatsapp.com" target="_blank" class="social-btn whatsapp">
+            <i class="fab fa-whatsapp"></i>
+            <span>WhatsApp</span>
+        </a>
+        
+        <a href="https://www.twitter.com" target="_blank" class="social-btn twitter">
+            <i class="fab fa-twitter"></i>
+            <span>Twitter</span>
+        </a>
+        
+        <a href="https://www.linkedin.com" target="_blank" class="social-btn linkedin">
+            <i class="fab fa-linkedin-in"></i>
+            <span>LinkedIn</span>
+        </a>
+        
+        <a href="https://www.snapchat.com" target="_blank" class="social-btn snapchat">
+            <i class="fab fa-snapchat-ghost"></i>
+            <span>Snapchat</span>
+        </a>
+        
+        <a href="https://telegram.org" target="_blank" class="social-btn telegram">
+            <i class="fab fa-telegram"></i>
+            <span>Telegram</span>
+        </a>
+        
+        <a href="https://www.spotify.com" target="_blank" class="social-btn spotify">
+            <i class="fab fa-spotify"></i>
+            <span>Spotify</span>
+        </a>
+        
+        <a href="https://discord.com" target="_blank" class="social-btn discord">
+            <i class="fab fa-discord"></i>
+            <span>Discord</span>
+        </a>
     </div>
 
     <script>
-        // বাটনগুলিতে ইন্টার্যাক্টিভ ইফেক্ট যোগ করা
+        // ইন্টার্যাক্টিভ ইফেক্ট
         document.querySelectorAll('.social-btn').forEach(button => {
-            button.addEventListener('mouseenter', function() {
-                this.style.transform = 'translateY(-8px)';
+            // হোভার এফেক্ট
+            button.addEventListener('mouseenter', function(e) {
+                this.style.transform = 'translateY(-15px) scale(1.05)';
+                this.style.zIndex = '10';
             });
             
-            button.addEventListener('mouseleave', function() {
-                this.style.transform = 'translateY(0)';
+            button.addEventListener('mouseleave', function(e) {
+                this.style.transform = 'translateY(0) scale(1)';
+                this.style.zIndex = '1';
             });
             
-            // ক্লিক করার সময় এনিমেশন
+            // ক্লিক এফেক্ট
             button.addEventListener('mousedown', function() {
-                this.style.transform = 'translateY(-2px)';
+                this.style.transform = 'translateY(-8px) scale(1.02)';
             });
             
             button.addEventListener('mouseup', function() {
-                this.style.transform = 'translateY(-8px)';
+                this.style.transform = 'translateY(-15px) scale(1.05)';
+            });
+            
+            // টাচ ডিভাইস
+            button.addEventListener('touchstart', function() {
+                this.style.transform = 'translateY(-8px) scale(1.02)';
+            });
+            
+            button.addEventListener('touchend', function() {
+                this.style.transform = 'translateY(0) scale(1)';
             });
         });
         
-        // পেজ লোড হওয়ার সময় এনিমেশন
-        document.addEventListener('DOMContentLoaded', function() {
-            document.body.style.opacity = '0';
-            document.body.style.transition = 'opacity 0.5s';
+        // পেজ লোড সাউন্ড ইফেক্ট (ভিজুয়াল)
+        window.addEventListener('load', function() {
+            document.body.style.animation = 'fadeIn 0.8s ease-out forwards';
             
-            setTimeout(function() {
-                document.body.style.opacity = '1';
-            }, 100);
-            
-            // বাটনগুলিকে পর্যায়ক্রমে দেখানো
+            // বাটনগুলিতে ওয়েভ এফেক্ট
             const buttons = document.querySelectorAll('.social-btn');
-            buttons.forEach((button, index) => {
-                button.style.opacity = '0';
-                button.style.transform = 'translateY(20px)';
-                button.style.transition = 'opacity 0.5s, transform 0.5s';
-                
+            buttons.forEach((btn, index) => {
                 setTimeout(() => {
-                    button.style.opacity = '1';
-                    button.style.transform = 'translateY(0)';
-                }, 300 + (index * 100));
+                    btn.style.animation = 'floatIn 0.6s ease-out forwards';
+                }, index * 50);
             });
         });
     </script>
