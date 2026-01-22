@@ -22,24 +22,16 @@
             padding: 20px;
         }
         
-        .container {
+        .main-header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #FF0000;
             width: 100%;
             max-width: 400px;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
         }
         
-        .header {
-            background: #FF0000;
-            color: white;
-            padding: 20px;
-            text-align: center;
-        }
-        
-        .header h1 {
-            font-size: 24px;
+        .main-header h1 {
+            font-size: 28px;
             margin-bottom: 8px;
             display: flex;
             align-items: center;
@@ -47,40 +39,70 @@
             gap: 10px;
         }
         
-        .header h1 i {
-            font-size: 28px;
+        .main-header h1 i {
+            font-size: 32px;
         }
         
-        .subtitle {
-            font-size: 14px;
-            opacity: 0.9;
+        .main-subtitle {
+            font-size: 16px;
+            color: #666;
             line-height: 1.4;
         }
         
-        .plan-section {
-            padding: 20px;
+        .plans-container {
+            width: 100%;
+            max-width: 1200px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+        
+        .plan-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
         
         .plan-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
+            background: #FF0000;
+            color: white;
+            padding: 20px;
+            text-align: center;
         }
         
         .plan-title {
-            font-size: 18px;
+            font-size: 20px;
             font-weight: 600;
-            color: #333;
+            margin-bottom: 5px;
         }
         
         .badge {
-            background: #4CAF50;
-            color: white;
-            padding: 4px 10px;
+            display: inline-block;
+            padding: 4px 12px;
             border-radius: 12px;
             font-size: 12px;
             font-weight: 500;
+            margin-top: 5px;
+        }
+        
+        .student-badge {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .family-badge {
+            background: #2196F3;
+            color: white;
+        }
+        
+        .plan-content {
+            padding: 20px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
         }
         
         .price-section {
@@ -142,6 +164,7 @@
             color: #666;
             line-height: 1.4;
             margin-bottom: 20px;
+            flex-grow: 1;
         }
         
         .buy-now-btn {
@@ -167,7 +190,7 @@
             background: #CC0000;
         }
         
-        .footer {
+        .plan-footer {
             padding: 15px 20px;
             text-align: center;
             border-top: 1px solid #eee;
@@ -177,104 +200,236 @@
         }
         
         /* Responsive Design */
-        @media (max-width: 480px) {
-            .container {
-                max-width: 100%;
+        @media (max-width: 992px) {
+            .plans-container {
+                grid-template-columns: repeat(2, 1fr);
             }
             
-            .header {
-                padding: 15px;
+            .plans-container .plan-card:last-child {
+                grid-column: span 2;
+                max-width: 400px;
+                margin: 0 auto;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .plans-container {
+                grid-template-columns: 1fr;
+                max-width: 400px;
             }
             
-            .header h1 {
-                font-size: 20px;
+            .plans-container .plan-card:last-child {
+                grid-column: span 1;
             }
             
-            .subtitle {
-                font-size: 13px;
+            .main-header h1 {
+                font-size: 24px;
             }
             
-            .plan-section {
-                padding: 15px;
+            .main-subtitle {
+                font-size: 14px;
             }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1><i class="fab fa-youtube"></i> YouTube Premium</h1>
-            <p class="subtitle">বিজ্ঞাপন-মুক্ত ভিডিও, ব্যাকগ্রাউন্ডে চালানো এবং অফলাইন দেখার সুবিধা নিন</p>
-        </div>
-        
-        <div class="plan-section">
+    <div class="main-header">
+        <h1><i class="fab fa-youtube"></i> YouTube Premium</h1>
+        <p class="main-subtitle">বিজ্ঞাপন-মুক্ত ভিডিও, ব্যাকগ্রাউন্ডে চালানো এবং অফলাইন দেখার সুবিধা নিন</p>
+    </div>
+    
+    <div class="plans-container">
+        <!-- Student Plan -->
+        <div class="plan-card">
             <div class="plan-header">
                 <div class="plan-title">Student</div>
-                <div class="badge">শুধুমাত্র শিক্ষার্থীদের জন্য</div>
+                <div class="badge student-badge">শুধুমাত্র শিক্ষার্থীদের জন্য</div>
             </div>
             
-            <div class="price-section">
-                <div class="price-label">Monthly</div>
-                <div class="price">
-                    <span class="currency">BDT</span>
-                    <span class="amount">139.00</span>
-                    <span class="period">/month</span>
+            <div class="plan-content">
+                <div class="price-section">
+                    <div class="price-label">Monthly</div>
+                    <div class="price">
+                        <span class="currency">BDT</span>
+                        <span class="amount">139.00</span>
+                        <span class="period">/month</span>
+                    </div>
                 </div>
+                
+                <div class="features">
+                    <div class="feature-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span>বিজ্ঞাপন-মুক্ত ভিডিও</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span>ব্যাকগ্রাউন্ডে চালানো</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span>অফলাইন ডাউনলোড</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span>YouTube Music Premium</span>
+                    </div>
+                </div>
+                
+                <p class="terms">
+                    Eligible students only. Annual verification required. Restrictions apply.
+                </p>
+                
+                <a href="https://example.com/buy-student" target="_blank" class="buy-now-btn">
+                    <i class="fab fa-youtube"></i>
+                    Buy Now
+                </a>
             </div>
             
-            <div class="features">
-                <div class="feature-item">
-                    <i class="fas fa-check-circle"></i>
-                    <span>বিজ্ঞাপন-মুক্ত ভিডিও</span>
-                </div>
-                <div class="feature-item">
-                    <i class="fas fa-check-circle"></i>
-                    <span>ব্যাকগ্রাউন্ডে চালানো</span>
-                </div>
-                <div class="feature-item">
-                    <i class="fas fa-check-circle"></i>
-                    <span>অফলাইন ডাউনলোড</span>
-                </div>
-                <div class="feature-item">
-                    <i class="fas fa-check-circle"></i>
-                    <span>YouTube Music Premium</span>
-                </div>
+            <div class="plan-footer">
+                যে কোনো সময় বাতিল করতে পারেন
             </div>
-            
-            <p class="terms">
-                Eligible students only. Annual verification required. Restrictions apply.
-            </p>
-            
-            <a href="https://example.com/buy-youtube-premium" target="_blank" class="buy-now-btn">
-                <i class="fab fa-youtube"></i>
-                Buy Now
-            </a>
         </div>
         
-        <div class="footer">
-            যে কোনো সময় বাতিল করতে পারেন। প্রতি মাসে BDT 139.00 চার্জ প্রয়োগ হবে।
+        <!-- Individual Plan -->
+        <div class="plan-card">
+            <div class="plan-header">
+                <div class="plan-title">Individual</div>
+            </div>
+            
+            <div class="plan-content">
+                <div class="price-section">
+                    <div class="price-label">Monthly</div>
+                    <div class="price">
+                        <span class="currency">BDT</span>
+                        <span class="amount">239.00</span>
+                        <span class="period">/month</span>
+                    </div>
+                </div>
+                
+                <div class="features">
+                    <div class="feature-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span>বিজ্ঞাপন-মুক্ত ভিডিও</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span>ব্যাকগ্রাউন্ডে চালানো</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span>অফলাইন ডাউনলোড</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span>YouTube Music Premium</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span>অরিজিনাল কনটেন্ট</span>
+                    </div>
+                </div>
+                
+                <p class="terms">
+                    Restrictions apply. Best for individual users.
+                </p>
+                
+                <a href="https://example.com/buy-individual" target="_blank" class="buy-now-btn">
+                    <i class="fab fa-youtube"></i>
+                    Buy Now
+                </a>
+            </div>
+            
+            <div class="plan-footer">
+                যে কোনো সময় বাতিল করতে পারেন
+            </div>
+        </div>
+        
+        <!-- Family Plan -->
+        <div class="plan-card">
+            <div class="plan-header">
+                <div class="plan-title">Family</div>
+                <div class="badge family-badge">পরিবারের জন্য সেরা</div>
+            </div>
+            
+            <div class="plan-content">
+                <div class="price-section">
+                    <div class="price-label">Monthly</div>
+                    <div class="price">
+                        <span class="currency">BDT</span>
+                        <span class="amount">449.00</span>
+                        <span class="period">/month</span>
+                    </div>
+                </div>
+                
+                <div class="features">
+                    <div class="feature-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span>৫ জন পর্যন্ত সদস্য</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span>পৃথক প্রোফাইল</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span>বিজ্ঞাপন-মুক্ত ভিডিও</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span>ব্যাকগ্রাউন্ডে চালানো</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span>অফলাইন ডাউনলোড</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span>YouTube Music Premium</span>
+                    </div>
+                </div>
+                
+                <p class="terms">
+                    Add up to 5 family members (ages 13+) in your household. Restrictions apply.
+                </p>
+                
+                <a href="https://example.com/buy-family" target="_blank" class="buy-now-btn">
+                    <i class="fab fa-youtube"></i>
+                    Buy Now
+                </a>
+            </div>
+            
+            <div class="plan-footer">
+                যে কোনো সময় বাতিল করতে পারেন
+            </div>
         </div>
     </div>
 
     <script>
-        // Add hover effect to the container
-        document.querySelector('.container').addEventListener('mouseenter', function() {
-            this.style.transform = 'translateY(-2px)';
-            this.style.transition = 'transform 0.3s ease';
+        // Add hover effect to plan cards
+        document.querySelectorAll('.plan-card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-5px)';
+                this.style.transition = 'transform 0.3s ease';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+            });
         });
         
-        document.querySelector('.container').addEventListener('mouseleave', function() {
-            this.style.transform = 'translateY(0)';
-        });
-        
-        // Optional: Add click confirmation
-        document.querySelector('.buy-now-btn').addEventListener('click', function(e) {
-            // You can add confirmation logic here if needed
-            // For example:
-            // const confirmBuy = confirm('Are you sure you want to buy YouTube Premium?');
-            // if (!confirmBuy) {
-            //     e.preventDefault();
-            // }
+        // Page load animation
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.plan-card');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                card.style.transition = 'opacity 0.5s, transform 0.5s';
+                
+                setTimeout(() => {
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, 200 + (index * 200));
+            });
         });
     </script>
 </body>
