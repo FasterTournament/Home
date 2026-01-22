@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Subscription</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Noto Sans Bengali', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #FF0000, #CC0000);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+        }
+        
+        .subscription-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .subscription-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+        }
+        
+        .card-header {
+            background: linear-gradient(to right, #FF0000, #CC0000);
+            color: white;
+            padding: 25px;
+            text-align: center;
+        }
+        
+        .card-header h2 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+        
+        .price-section {
+            padding: 30px;
+            text-align: center;
+            flex-grow: 1;
+        }
+        
+        .price-title {
+            font-size: 1.2rem;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        
+        .price {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #FF0000;
+            margin-bottom: 5px;
+        }
+        
+        .trial-offer {
+            font-size: 1.3rem;
+            color: #FF0000;
+            font-weight: 600;
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: rgba(255, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        
+        .description {
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 25px;
+            font-size: 0.95rem;
+        }
+        
+        .features {
+            text-align: left;
+            margin: 20px 0;
+            padding-left: 20px;
+        }
+        
+        .features li {
+            margin-bottom: 10px;
+            color: #444;
+        }
+        
+        .btn-container {
+            padding: 0 30px 30px;
+        }
+        
+        .subscribe-btn {
+            display: block;
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(to right, #FF0000, #CC0000);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            text-decoration: none;
+        }
+        
+        .subscribe-btn:hover {
+            background: linear-gradient(to right, #CC0000, #990000);
+            transform: scale(1.02);
+        }
+        
+        .student-badge {
+            background: #4CAF50;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            display: inline-block;
+            margin-top: 10px;
+        }
+        
+        .family-badge {
+            background: #2196F3;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            display: inline-block;
+            margin-top: 10px;
+        }
+        
+        .note {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.8);
+            margin-top: 30px;
+            font-size: 0.9rem;
+            max-width: 800px;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 992px) {
+            .container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .container .subscription-card:last-child {
+                grid-column: span 2;
+                max-width: 500px;
+                margin: 0 auto;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            
+            .container .subscription-card:last-child {
+                grid-column: span 1;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .header p {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1><i class="fab fa-youtube"></i> YouTube Premium</h1>
+        <p>বিজ্ঞাপন-মুক্ত ভিডিও, ব্যাকগ্রাউন্ডে চালানো এবং অফলাইন দেখার সুবিধা নিন</p>
+    </div>
+    
+    <div class="container">
+        <!-- Student Plan -->
+        <div class="subscription-card">
+            <div class="card-header">
+                <h2>Student</h2>
+                <div class="student-badge">শুধুমাত্র শিক্ষার্থীদের জন্য</div>
+            </div>
+            <div class="price-section">
+                <div class="price-title">Monthly</div>
+                <div class="price">BDT 139.00/month</div>
+                <div class="trial-offer">1-month trial for BDT 0</div>
+                <p class="description">
+                    Eligible students only. Annual verification required. Restrictions apply.
+                </p>
+                <ul class="features">
+                    <li><i class="fas fa-check" style="color: #4CAF50;"></i> বিজ্ঞাপন-মুক্ত ভিডিও</li>
+                    <li><i class="fas fa-check" style="color: #4CAF50;"></i> ব্যাকগ্রাউন্ডে চালানো</li>
+                    <li><i class="fas fa-check" style="color: #4CAF50;"></i> অফলাইন ডাউনলোড</li>
+                    <li><i class="fas fa-check" style="color: #4CAF50;"></i> YouTube Music Premium</li>
+                </ul>
+            </div>
+            <div class="btn-container">
+                <a href="#" class="subscribe-btn">Try 1 month for BDT 0</a>
+            </div>
+        </div>
+        
+        <!-- Individual Plan -->
+        <div class="subscription-card">
+            <div class="card-header">
+                <h2>Individual</h2>
+            </div>
+            <div class="price-section">
+                <div class="price-title">Monthly</div>
+                <div class="price">BDT 239.00/month</div>
+                <div class="trial-offer">1-month trial for BDT 0</div>
+                <p class="description">
+                    Restrictions apply.
+                </p>
+                <ul class="features">
+                    <li><i class="fas fa-check" style="color: #4CAF50;"></i> বিজ্ঞাপন-মুক্ত ভিডিও</li>
+                    <li><i class="fas fa-check" style="color: #4CAF50;"></i> ব্যাকগ্রাউন্ডে চালানো</li>
+                    <li><i class="fas fa-check" style="color: #4CAF50;"></i> অফলাইন ডাউনলোড</li>
+                    <li><i class="fas fa-check" style="color: #4CAF50;"></i> YouTube Music Premium</li>
+                    <li><i class="fas fa-check" style="color: #4CAF50;"></i> অরিজিনাল কনটেন্ট</li>
+                </ul>
+            </div>
+            <div class="btn-container">
+                <a href="#" class="subscribe-btn">Try 1 month for BDT 0</a>
+            </div>
+        </div>
+        
+        <!-- Family Plan -->
+        <div class="subscription-card">
+            <div class="card-header">
+                <h2>Family</h2>
+                <div class="family-badge">পরিবারের জন্য সেরা অফার</div>
+            </div>
+            <div class="price-section">
+                <div class="price-title">Monthly</div>
+                <div class="price">BDT 449.00/month</div>
+                <div class="trial-offer">1-month trial for BDT 0</div>
+                <p class="description">
+                    Add up to 5 family members (ages 13+) in your household. Restrictions apply.
+                </p>
+                <ul class="features">
+                    <li><i class="fas fa-check" style="color: #4CAF50;"></i> ৫ জন পর্যন্ত সদস্য</li>
+                    <li><i class="fas fa-check" style="color: #4CAF50;"></i> পৃথক প্রোফাইল</li>
+                    <li><i class="fas fa-check" style="color: #4CAF50;"></i> বিজ্ঞাপন-মুক্ত ভিডিও</li>
+                    <li><i class="fas fa-check" style="color: #4CAF50;"></i> ব্যাকগ্রাউন্ডে চালানো</li>
+                    <li><i class="fas fa-check" style="color: #4CAF50;"></i> অফলাইন ডাউনলোড</li>
+                    <li><i class="fas fa-check" style="color: #4CAF50;"></i> YouTube Music Premium</li>
+                </ul>
+            </div>
+            <div class="btn-container">
+                <a href="#" class="subscribe-btn">Try 1 month for BDT 0</a>
+            </div>
+        </div>
+    </div>
+    
+    <p class="note">
+        * সমস্ত প্ল্যান ১ মাসের ফ্রি ট্রায়াল অন্তর্ভুক্ত করে। ট্রায়াল শেষ হওয়ার পরে স্বয়ংক্রিয়ভাবে চার্জ প্রয়োগ হবে। যে কোনো সময় বাতিল করতে পারেন।
+    </p>
+
+    <script>
+        // Add interactivity to subscription cards
+        document.querySelectorAll('.subscribe-btn').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                const plan = this.closest('.subscription-card').querySelector('h2').textContent;
+                alert(`You have selected the ${plan} plan. You will be redirected to the payment page.`);
+                // In real implementation, redirect to payment page
+                // window.location.href = `/subscribe/${plan.toLowerCase()}`;
+            });
+        });
+        
+        // Add hover effects to cards
+        document.querySelectorAll('.subscription-card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-10px)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+            });
+        });
+        
+        // Page load animation
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.subscription-card');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(30px)';
+                card.style.transition = 'opacity 0.5s, transform 0.5s';
+                
+                setTimeout(() => {
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, 300 + (index * 200));
+            });
+        });
+    </script>
+</body>
+</html>
